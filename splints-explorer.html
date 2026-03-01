@@ -1,0 +1,1433 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EMT Splints Explorer</title>
+<style>
+/* ── THEME VARIABLES ─────────────────────────────────────── */
+:root {
+  --bg:           #0d1117;
+  --surface:      #161b22;
+  --surface2:     #21262d;
+  --surface-hover:#1c2128;
+  --border:       #30363d;
+  --text:         #e2e8f0;
+  --text2:        #8b949e;
+  --text3:        #c9d1d9;
+  --textbright:   #f0f6ff;
+  --blue:         #58a6ff;
+  --blue-bg:      #1f3a5e;
+  --blue-dim:     #1a2a3a;
+  --blue-accent:  #1f6feb;
+  --blue-bright:  #79c0ff;
+  --green:        #3fb950;
+  --green-bg:     #1a3a2a;
+  --green-bright: #56d364;
+  --red:          #f85149;
+  --red-bg:       #3a1a1a;
+  --yellow:       #e3b341;
+  --yellow-bg:    #3a2a1a;
+  --purple:       #bc8cff;
+  --purple-bg:    #2a1a3a;
+  --purple-bright:#d2a8ff;
+  --orange:       #f0883e;
+}
+[data-theme="light"] {
+  --bg:           #f6f8fa;
+  --surface:      #ffffff;
+  --surface2:     #f0f2f5;
+  --surface-hover:#eaeef2;
+  --border:       #d0d7de;
+  --text:         #1f2328;
+  --text2:        #656d76;
+  --text3:        #24292f;
+  --textbright:   #0d1117;
+  --blue:         #0969da;
+  --blue-bg:      #ddf4ff;
+  --blue-dim:     #e8f4fd;
+  --blue-accent:  #0969da;
+  --blue-bright:  #0550ae;
+  --green:        #1a7f37;
+  --green-bg:     #dafbe1;
+  --green-bright: #116329;
+  --red:          #cf222e;
+  --red-bg:       #ffeef0;
+  --yellow:       #9a6700;
+  --yellow-bg:    #fff8c5;
+  --purple:       #8250df;
+  --purple-bg:    #fbefff;
+  --purple-bright:#6639ba;
+  --orange:       #bc4c00;
+}
+
+/* ── BASE ──────────────────────────────────────────────────── */
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,sans-serif;height:100vh;display:grid;grid-template-rows:48px 1fr 180px;overflow:hidden;transition:background .2s,color .2s}
+
+/* ── HEADER ─────────────────────────────────────────────────── */
+header{background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:16px}
+header h1{font-size:15px;font-weight:600;color:var(--textbright);letter-spacing:.3px;white-space:nowrap}
+header h1 span{color:var(--blue)}
+.mode-tabs{display:flex;gap:4px}
+.mode-tab{background:none;border:1px solid var(--border);color:var(--text2);padding:4px 12px;border-radius:6px;cursor:pointer;font-size:12px;transition:all .15s}
+.mode-tab.active{background:var(--blue-accent);border-color:var(--blue-accent);color:#fff}
+.preset-bar{display:flex;gap:6px;align-items:center;flex-wrap:nowrap}
+.preset-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text2);padding:3px 10px;border-radius:5px;cursor:pointer;font-size:11px;transition:all .15s;white-space:nowrap}
+.preset-btn:hover{border-color:var(--blue);color:var(--blue)}
+.theme-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text2);padding:4px 10px;border-radius:6px;cursor:pointer;font-size:14px;line-height:1;transition:all .15s;margin-left:8px}
+.theme-btn:hover{border-color:var(--yellow);color:var(--yellow)}
+
+/* ── MAIN ────────────────────────────────────────────────────── */
+main{display:grid;grid-template-columns:260px 1fr;overflow:hidden}
+
+/* ── SIDEBAR ─────────────────────────────────────────────────── */
+aside{background:var(--surface);border-right:1px solid var(--border);overflow-y:auto;padding:12px}
+.filter-group{margin-bottom:14px}
+.filter-label{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.filter-chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{background:var(--surface2);border:1px solid var(--border);color:var(--text2);padding:3px 10px;border-radius:12px;cursor:pointer;font-size:11px;transition:all .15s}
+.chip:hover{border-color:var(--blue);color:var(--blue)}
+.chip.active{background:var(--blue-bg);border-color:var(--blue);color:var(--blue)}
+.splint-list{margin-top:4px;display:flex;flex-direction:column;gap:3px}
+.splint-item{padding:8px 10px;border-radius:6px;cursor:pointer;border:1px solid transparent;transition:all .15s;display:flex;align-items:center;gap:8px}
+.splint-item:hover{background:var(--surface-hover);border-color:var(--border)}
+.splint-item.active{background:var(--surface-hover);border-color:var(--blue)}
+.splint-item .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.splint-item .name{font-size:12px;font-weight:500;color:var(--text);line-height:1.3}
+.splint-item .tag{font-size:10px;color:var(--text2);margin-top:1px}
+.splint-count{font-size:11px;color:var(--text2);margin-bottom:6px}
+
+/* ── CONTENT ─────────────────────────────────────────────────── */
+.content{overflow-y:auto;padding:20px;background:var(--bg)}
+.splint-card{max-width:780px}
+.card-header{display:flex;align-items:flex-start;gap:16px;margin-bottom:20px}
+.card-icon{width:52px;height:52px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0}
+.card-title{font-size:20px;font-weight:700;color:var(--textbright);line-height:1.2}
+.card-subtitle{font-size:13px;color:var(--text2);margin-top:3px}
+.badge-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.badge{padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+.badge-region  {background:var(--green-bg);color:var(--green)}
+.badge-injury  {background:var(--red-bg);color:var(--red)}
+.badge-setting {background:var(--blue-dim);color:var(--blue)}
+.badge-category{background:var(--purple-bg);color:var(--purple)}
+
+.sections-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+.section{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px}
+.section.full{grid-column:1/-1}
+.section h3{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.section h3 .icon{font-size:14px}
+.indicator-list{list-style:none;display:flex;flex-direction:column;gap:6px}
+.indicator-list li{font-size:12px;color:var(--text3);padding-left:12px;position:relative;line-height:1.5}
+.indicator-list li::before{content:"•";position:absolute;left:0;color:var(--blue)}
+.indicator-list.contra li::before{color:var(--red)}
+.indicator-list.warn li::before{color:var(--yellow)}
+.steps-list{list-style:none;display:flex;flex-direction:column;gap:8px}
+.steps-list li{font-size:12px;color:var(--text3);padding-left:24px;position:relative;line-height:1.5}
+.steps-list li .step-num{position:absolute;left:0;background:var(--blue-accent);color:#fff;width:16px;height:16px;border-radius:50%;font-size:10px;display:flex;align-items:center;justify-content:center;font-weight:700;top:1px}
+.pearl-list{list-style:none;display:flex;flex-direction:column;gap:6px}
+.pearl-list li{font-size:12px;color:var(--yellow);padding-left:16px;position:relative;line-height:1.5}
+.pearl-list li::before{content:"★";position:absolute;left:0;font-size:10px}
+.diagram-wrap{display:flex;justify-content:center;padding:10px;background:var(--bg);border-radius:6px}
+
+/* ── QUIZ ─────────────────────────────────────────────────────── */
+.quiz-area{padding:4px}
+.quiz-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;max-width:700px}
+.quiz-scenario{font-size:14px;color:var(--text);line-height:1.7;margin-bottom:16px}
+.quiz-scenario strong{color:var(--textbright)}
+.quiz-options{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.quiz-opt{background:var(--surface2);border:1px solid var(--border);color:var(--text3);padding:10px 14px;border-radius:7px;cursor:pointer;font-size:12px;text-align:left;transition:all .15s;line-height:1.4}
+.quiz-opt:hover{border-color:var(--blue);color:var(--blue)}
+.quiz-opt.correct{background:var(--green-bg);border-color:var(--green);color:var(--green)}
+.quiz-opt.wrong{background:var(--red-bg);border-color:var(--red);color:var(--red)}
+.quiz-opt.reveal{background:var(--blue-dim);border-color:var(--blue);color:var(--blue)}
+.quiz-explanation{background:var(--surface-hover);border-left:3px solid var(--blue);padding:12px;border-radius:0 6px 6px 0;font-size:12px;color:var(--text3);line-height:1.6;margin-top:10px;display:none}
+.quiz-explanation.show{display:block}
+.quiz-btn-row{display:flex;gap:8px;margin-top:14px}
+.quiz-btn{background:var(--blue-accent);border:none;color:#fff;padding:7px 16px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600}
+.quiz-btn.ghost{background:none;border:1px solid var(--border);color:var(--text2)}
+.quiz-btn.ghost:hover{border-color:var(--blue);color:var(--blue)}
+.quiz-progress{font-size:11px;color:var(--text2);margin-bottom:12px}
+.quiz-score{font-size:13px;font-weight:600;color:var(--green)}
+
+/* ── FOOTER ──────────────────────────────────────────────────── */
+footer{background:var(--surface);border-top:1px solid var(--border);display:grid;grid-template-rows:auto 1fr;padding:10px 16px;gap:6px}
+.footer-label{font-size:11px;color:var(--text2);font-weight:600;text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;justify-content:space-between}
+.copy-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text2);padding:2px 10px;border-radius:5px;cursor:pointer;font-size:11px;transition:all .15s}
+.copy-btn:hover{border-color:var(--green);color:var(--green)}
+.copy-btn.copied{border-color:var(--green);color:var(--green)}
+#prompt-output{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 12px;font-family:ui-monospace,monospace;font-size:11px;color:var(--blue-bright);line-height:1.6;overflow-y:auto;resize:none;white-space:pre-wrap;word-break:break-word}
+
+/* ── EMPTY STATE ─────────────────────────────────────────────── */
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--text2);gap:8px}
+.empty-state .big{font-size:40px}
+.empty-state p{font-size:13px}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🩹 <span>EMT</span> Splints Explorer</h1>
+  <div class="preset-bar">
+    <span style="font-size:11px;color:var(--text2)">Presets:</span>
+    <button class="preset-btn" onclick="applyPreset('upper')">Upper Extremity</button>
+    <button class="preset-btn" onclick="applyPreset('lower')">Lower Extremity</button>
+    <button class="preset-btn" onclick="applyPreset('traction')">Traction</button>
+    <button class="preset-btn" onclick="applyPreset('spine')">Spine / Pelvis</button>
+    <button class="preset-btn" onclick="applyPreset('field')">Field Improvised</button>
+    <button class="preset-btn" onclick="applyPreset('all')">All</button>
+  </div>
+  <div class="mode-tabs">
+    <button class="mode-tab active" onclick="setMode('browse')" id="tab-browse">Browse</button>
+    <button class="mode-tab" onclick="setMode('quiz')" id="tab-quiz">Quiz Me</button>
+  </div>
+  <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle light/dark mode">🌙</button>
+</header>
+
+<main>
+  <aside>
+    <div class="filter-group">
+      <div class="filter-label">Body Region</div>
+      <div class="filter-chips">
+        <div class="chip active" data-group="region" data-val="all"   onclick="toggleChip(this)">All</div>
+        <div class="chip"        data-group="region" data-val="upper" onclick="toggleChip(this)">Upper Extremity</div>
+        <div class="chip"        data-group="region" data-val="lower" onclick="toggleChip(this)">Lower Extremity</div>
+        <div class="chip"        data-group="region" data-val="spine" onclick="toggleChip(this)">Spine / Pelvis</div>
+      </div>
+    </div>
+    <div class="filter-group">
+      <div class="filter-label">Injury Type</div>
+      <div class="filter-chips">
+        <div class="chip active" data-group="injury" data-val="all"        onclick="toggleChip(this)">All</div>
+        <div class="chip"        data-group="injury" data-val="fracture"   onclick="toggleChip(this)">Fracture</div>
+        <div class="chip"        data-group="injury" data-val="dislocation"onclick="toggleChip(this)">Dislocation</div>
+        <div class="chip"        data-group="injury" data-val="softtissue" onclick="toggleChip(this)">Soft Tissue</div>
+        <div class="chip"        data-group="injury" data-val="traction"   onclick="toggleChip(this)">Traction</div>
+      </div>
+    </div>
+    <div class="filter-group">
+      <div class="filter-label">Setting</div>
+      <div class="filter-chips">
+        <div class="chip active" data-group="setting" data-val="all"        onclick="toggleChip(this)">All</div>
+        <div class="chip"        data-group="setting" data-val="commercial" onclick="toggleChip(this)">Commercial</div>
+        <div class="chip"        data-group="setting" data-val="improvised" onclick="toggleChip(this)">Improvised</div>
+        <div class="chip"        data-group="setting" data-val="hospital"   onclick="toggleChip(this)">Hospital</div>
+      </div>
+    </div>
+    <div class="filter-label" style="margin-bottom:6px">
+      Splints <span class="splint-count" id="splint-count" style="font-weight:400;margin-left:6px"></span>
+    </div>
+    <div class="splint-list" id="splint-list"></div>
+  </aside>
+
+  <div class="content" id="content-area">
+    <div class="empty-state">
+      <div class="big">🩹</div>
+      <p>Select a splint to explore its indications, application, and clinical pearls.</p>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="footer-label">
+    Generated Prompt
+    <button class="copy-btn" id="copy-btn" onclick="copyPrompt()">Copy</button>
+  </div>
+  <div id="prompt-output">Select a splint in Browse mode, or answer a question in Quiz mode to generate a study prompt.</div>
+</footer>
+
+<script>
+// ─── SPLINT DATA ──────────────────────────────────────────────────────────────
+
+const SPLINTS = [
+  {
+    id: 'sam',
+    name: 'SAM Splint',
+    emoji: '📏',
+    color: '#1f6feb',
+    category: 'Moldable Rigid',
+    regions: ['upper','lower'],
+    injuries: ['fracture','dislocation','softtissue'],
+    setting: ['commercial','improvised'],
+    description: 'Lightweight aluminum core with foam padding that can be molded to any shape. One of the most versatile splints in the EMT toolkit.',
+    indications: [
+      'Suspected fractures of the forearm, wrist, hand, fingers',
+      'Ankle and foot fractures',
+      'Suspected dislocations of the wrist or ankle',
+      'Cervical spine stabilization (improvised C-collar)',
+      'Any situation requiring a quickly moldable rigid support'
+    ],
+    contraindications: [
+      'Suspected femur fractures — use traction splint instead',
+      'Open fractures with severe contamination (cover wound first)',
+      'Spinal fractures requiring full immobilization (use backboard + collar)'
+    ],
+    warnings: [
+      'Always check CSM (circulation, sensation, movement) before AND after application',
+      'Do not apply so tight as to impair circulation — check capillary refill',
+      'Pad bony prominences to prevent pressure sores'
+    ],
+    steps: [
+      'Perform initial assessment, expose and visualize the injury',
+      'Check CSM distal to the injury site',
+      'Select appropriate SAM splint size; measure against the uninjured limb',
+      'Mold the splint: create a three-point bend (C-curve) for rigidity',
+      'Pad bony prominences with extra foam or gauze',
+      'Position limb in position of function or as found (do not force)',
+      'Apply splint and secure with roller gauze or elastic bandage, distal to proximal',
+      'Re-check CSM and document findings'
+    ],
+    pearls: [
+      'The "C-curve" or "T-bar" bend dramatically increases rigidity — always mold before applying',
+      'Cold weather makes SAM splints stiffer; warm in your hands or axilla first',
+      'For wrist fractures, splint in slight dorsiflexion (position of function)',
+      '"Splint them as they lie" — do not attempt to realign unless no distal pulse'
+    ],
+    diagramType: 'forearm'
+  },
+  {
+    id: 'air',
+    name: 'Air / Pneumatic Splint',
+    emoji: '🫧',
+    color: '#3fb950',
+    category: 'Inflatable',
+    regions: ['upper','lower'],
+    injuries: ['fracture','softtissue'],
+    setting: ['commercial'],
+    description: 'Transparent inflatable sleeve that provides circumferential pressure and immobilization. Particularly useful for distal extremity injuries.',
+    indications: [
+      'Forearm and wrist fractures',
+      'Lower leg (tibia/fibula) fractures',
+      'Ankle sprains and fractures',
+      'Soft tissue injuries requiring compression',
+      'Burns to extremities (reduces contamination risk)'
+    ],
+    contraindications: [
+      'Femur fractures — insufficient stabilization',
+      'Open fractures with protruding bone',
+      'Suspected circulatory compromise — circumferential pressure may worsen',
+      'Extreme cold environments — air volume changes with temperature'
+    ],
+    warnings: [
+      'Circumferential pressure can mask deteriorating circulation — monitor closely',
+      'Air volume changes with altitude and temperature — recheck pressure during transport',
+      'Do NOT over-inflate — should indent slightly with fingertip pressure',
+      'Remove rings, watches, and jewelry before application'
+    ],
+    steps: [
+      'Expose and assess the injury; check distal CSM',
+      'Remove jewelry and constrictive clothing from the limb',
+      'Slide the deflated splint over the injured limb or your own arm first',
+      'Position limb in position of function',
+      'Zip or fasten the splint around the limb',
+      'Inflate by mouth or pump until firm but with slight give',
+      'Verify circulation — nail bed capillary refill < 2 seconds',
+      'Re-check CSM every 5 minutes during transport'
+    ],
+    pearls: [
+      'Altitude increases air pressure — in air transport, partially deflate to prevent over-inflation',
+      'The transparency allows ongoing wound visualization during transport',
+      'Effective for soft tissue injuries where compression also reduces swelling',
+      'Not ideal in cold — air contracts and splint loosens; check frequently'
+    ],
+    diagramType: 'lower-leg'
+  },
+  {
+    id: 'vacuum',
+    name: 'Vacuum Splint',
+    emoji: '💨',
+    color: '#bc8cff',
+    category: 'Vacuum-Conforming',
+    regions: ['upper','lower'],
+    injuries: ['fracture','dislocation'],
+    setting: ['commercial'],
+    description: 'Bag filled with polystyrene beads that conforms to body shape and hardens when air is evacuated. Excellent for complex injuries and patient comfort.',
+    indications: [
+      'Complex fractures (multiple sites, unusual angulation)',
+      'Dislocations requiring immobilization in the deformed position',
+      'Injuries to joints (knee, ankle, elbow) where rigid splints are difficult to fit',
+      'Pelvic fractures when combined with pelvic binders',
+      'Patient comfort priority during long transports'
+    ],
+    contraindications: [
+      'Penetrating objects through the limb (cannot safely conform)',
+      'Burns or wounds requiring frequent dressing changes',
+      'Environments with sharp debris that could puncture the splint'
+    ],
+    warnings: [
+      'A punctured vacuum splint immediately loses rigidity — have a backup plan',
+      'Immobilizes in whatever position the limb is in — position correctly BEFORE applying',
+      'Check for holes/punctures before use in the field'
+    ],
+    steps: [
+      'Lay the splint flat and distribute beads evenly',
+      'Assess injury and check distal CSM',
+      'Position the injured limb carefully on the splint',
+      'Wrap the splint around the limb, molding to its contours',
+      'Maintain gentle pressure on the limb and connect the evacuation valve',
+      'Evacuate air with pump until splint is firm and holds shape',
+      'Secure straps without over-tightening',
+      'Reassess CSM — document'
+    ],
+    pearls: [
+      '"Set it in the position you find it" — vacuum splints are ideal when you cannot realign',
+      'More comfortable than rigid splints for anxious patients, reducing pain and movement',
+      'Always carry a backup SAM splint when using vacuum splints in the field',
+      'Temperature stable unlike pneumatic splints — good for variable environments'
+    ],
+    diagramType: 'knee'
+  },
+  {
+    id: 'traction-hare',
+    name: 'Hare Traction Splint',
+    emoji: '⚙️',
+    color: '#e3b341',
+    category: 'Traction',
+    regions: ['lower'],
+    injuries: ['traction','fracture'],
+    setting: ['commercial'],
+    description: 'Bipolar traction splint used specifically for mid-shaft femur fractures. Applies longitudinal traction to reduce blood loss, pain, and prevent further neurovascular injury.',
+    indications: [
+      'Isolated mid-shaft femur fractures',
+      'Suspected femur fracture with significant pain, deformity, or shortening',
+      'Mid-shaft femur fractures in patients > 8 years old'
+    ],
+    contraindications: [
+      'Hip fractures or dislocations — traction may worsen the injury',
+      'Knee injuries (ligamentous or fracture) — ankle hitch will cause harm',
+      'Lower leg fractures (tibia/fibula) — do not apply',
+      'Pelvic fractures — increases internal bleeding',
+      'Partial amputations of the leg',
+      'Injuries within 2 inches of the knee or ankle'
+    ],
+    warnings: [
+      'NEVER use for hip or pelvis fractures — can cause catastrophic bleeding',
+      'Assess for ankle and knee injury BEFORE applying — ankle hitch is contraindicated with these',
+      'Must be applied before long backboard in multi-system trauma',
+      'Traction amount: approximately 10% of body weight or until pain relief'
+    ],
+    steps: [
+      'Perform scene size-up and ensure mechanism suggests femur fracture',
+      'Manually stabilize the limb while partner prepares the Hare splint',
+      'Apply padded ankle hitch around the ankle (above the malleoli)',
+      'Position the splint — ischial pad snug against the ischial tuberosity',
+      'Secure the thigh strap (proximal) and connect to ischial ring',
+      'Apply mechanical traction via windlass until approximately equal to 10% body weight',
+      'Secure remaining straps (avoid the fracture site and knee)',
+      'Reassess PMS (pulse, motor, sensation) distal to injury',
+      'Secure to long backboard for transport'
+    ],
+    pearls: [
+      'Femur fractures can harbor 1.5–2 liters of blood loss into the thigh — traction reduces this',
+      'The patient should report pain relief when correct traction is achieved',
+      'Two-rescuer technique is strongly preferred — one maintains manual traction throughout',
+      'Always re-examine for open femur fractures (may have small wounds in the groin or buttock)',
+      'Pediatric patients < 8 years: consider Sager or improvised traction instead'
+    ],
+    diagramType: 'traction'
+  },
+  {
+    id: 'traction-sager',
+    name: 'Sager Traction Splint',
+    emoji: '⚙️',
+    color: '#f0883e',
+    category: 'Traction',
+    regions: ['lower'],
+    injuries: ['traction','fracture'],
+    setting: ['commercial'],
+    description: 'Unipolar (single-shaft) traction splint positioned medially. Can be used bilaterally and fits better on the long backboard. Requires less space than the Hare.',
+    indications: [
+      'Mid-shaft femur fractures (same as Hare)',
+      'Bilateral femur fractures (two Sager splints can be applied)',
+      'Confined space extractions where Hare splint is too bulky'
+    ],
+    contraindications: [
+      'Same as Hare Traction Splint (hip, knee, pelvis, ankle injuries)',
+      'Genitalia injuries — medial placement may cause pressure'
+    ],
+    warnings: [
+      'Medial shaft must be padded to prevent perineal pressure necrosis on long transports',
+      'Traction gauge built-in — use it; target ~10% body weight',
+      'Do not flex the knee during application'
+    ],
+    steps: [
+      'Manual inline traction maintained throughout by partner',
+      'Position padded perineal cushion against the ischium (medial thigh, not groin)',
+      'Extend shaft to approximate limb length + 6 inches',
+      'Apply ankle straps bilaterally above the malleoli',
+      'Attach ankle strap to hook at end of shaft',
+      'Apply traction via ratchet mechanism — monitor gauge (target ~10% body weight)',
+      'Secure thigh and lower leg straps (avoid knee)',
+      'Confirm PMS distal to injury'
+    ],
+    pearls: [
+      'Sager applies traction against the ischium; Hare applies against the groin — know the difference',
+      'Fits flat on the backboard more easily than the Hare — preferred for complex MVC patients',
+      'Built-in traction gauge removes guesswork — use it every time'
+    ],
+    diagramType: 'traction'
+  },
+  {
+    id: 'improvised',
+    name: 'Improvised Splint',
+    emoji: '🌿',
+    color: '#56d364',
+    category: 'Improvised',
+    regions: ['upper','lower'],
+    injuries: ['fracture','dislocation','softtissue'],
+    setting: ['improvised'],
+    description: 'Any rigid material available (boards, ski poles, rolled magazines, walking sticks) padded and secured with available materials. Essential wilderness and mass-casualty skill.',
+    indications: [
+      'Any suspected fracture or dislocation when commercial splints are unavailable',
+      'Mass casualty incidents where supplies are exhausted',
+      'Wilderness or remote emergencies',
+      'Patient entrapment or prolonged transport'
+    ],
+    contraindications: [
+      'Do not delay evacuation attempting elaborate improvised splints',
+      'Do not use materials that may break or collapse under load'
+    ],
+    warnings: [
+      'Improvised materials may have sharp edges — pad thoroughly',
+      'Secure firmly but not so tight as to impair circulation',
+      'Reassess CSM more frequently due to less reliable materials'
+    ],
+    steps: [
+      'Identify the injury and plan splint to extend one joint above and below the fracture',
+      'Gather available rigid material (board, pole, rolled newspaper, umbrella)',
+      'Pad the rigid material generously with clothing, foam, or soft materials',
+      'Apply padding between the splint and bony prominences',
+      'Secure with available cordage (belts, torn clothing, bandanas, shoelaces)',
+      'Tie knots on the side, not over the bone',
+      'Check CSM — loosen if circulation is impaired',
+      'Reassess every 10 minutes'
+    ],
+    pearls: [
+      'The golden rule: splint one joint above AND one joint below the fracture',
+      'A pillow or sleeping bag is an excellent improvised ankle/foot splint',
+      'Buddy-taping a broken finger to its neighbor is the simplest improvised splint',
+      'In cold, remove as little clothing as possible — pad over clothes instead'
+    ],
+    diagramType: 'improvised'
+  },
+  {
+    id: 'pillow',
+    name: 'Pillow Splint',
+    emoji: '🛏️',
+    color: '#58a6ff',
+    category: 'Soft / Conforming',
+    regions: ['lower'],
+    injuries: ['fracture','dislocation','softtissue'],
+    setting: ['improvised','commercial'],
+    description: 'Pillow or bulky soft dressing wrapped around the ankle/foot and secured. Excellent comfort and mild immobilization for distal lower extremity injuries.',
+    indications: [
+      'Ankle sprains and fractures',
+      'Foot fractures',
+      'Calcaneus (heel) fractures',
+      'Distal tibia/fibula fractures',
+      'Any distal lower leg injury when rigid splint is unavailable or uncomfortable'
+    ],
+    contraindications: [
+      'Proximal or mid-shaft tibia/fibula fractures — need rigid immobilization',
+      'Suspected compartment syndrome — do not circumferentially wrap tightly'
+    ],
+    warnings: [
+      'Provides minimal rigid immobilization — patient must not weight bear',
+      'Monitor for increasing swelling (compartment syndrome)',
+      'Reassess CSM frequently on long transports'
+    ],
+    steps: [
+      'Assess ankle and foot; check pedal pulses and sensation',
+      'Fold a pillow in half lengthwise',
+      'Place injured extremity centered on the pillow',
+      'Wrap the pillow around the foot and ankle',
+      'Secure with bandages or cravats — snug but not tight',
+      'Elevate the extremity if possible',
+      'Reassess CSM and document'
+    ],
+    pearls: [
+      'Most practical for lateral ankle sprains vs. true fractures — always transport for X-ray',
+      'If no pillow: blanket, towel, or clothing rolled into a U-shape works well',
+      'The gentle compression also reduces swelling — a clinical advantage of this splint type'
+    ],
+    diagramType: 'ankle'
+  },
+  {
+    id: 'sling-swathe',
+    name: 'Sling & Swathe',
+    emoji: '🦾',
+    color: '#f85149',
+    category: 'Soft / Shoulder',
+    regions: ['upper'],
+    injuries: ['fracture','dislocation','softtissue'],
+    setting: ['commercial','improvised'],
+    description: 'Sling supports the arm; swathe binds the arm against the torso to prevent rotation. Standard immobilization for shoulder, clavicle, and humerus injuries.',
+    indications: [
+      'Clavicle (collarbone) fractures',
+      'Proximal and mid-shaft humerus fractures',
+      'Shoulder dislocations (after reduction or en route)',
+      'Shoulder separations (AC joint injuries)',
+      'Soft tissue injuries to the shoulder girdle',
+      'Elbow injuries where immobilization against the body is indicated'
+    ],
+    contraindications: [
+      'Open wounds in the axilla — bandage first, monitor carefully',
+      'Suspected vascular injury to the axillary artery — do not compress further'
+    ],
+    warnings: [
+      'Swathe must not compress the chest wall enough to impair breathing',
+      'Check radial pulse before and after application',
+      'Monitor for numbness/tingling (axillary nerve involvement common in shoulder dislocations)'
+    ],
+    steps: [
+      'Assess the shoulder and upper arm; check radial pulse and grip strength',
+      'Support the arm at the elbow at a 90° angle (or position of comfort)',
+      'Apply sling under the arm, with the knot to the side (not on the spine)',
+      'Ensure the sling supports from the wrist to the elbow — wrist should not hang free',
+      'Apply swathe (bandage or cravat) around the upper arm and torso',
+      'Secure the swathe — firm, not tight; patient should breathe normally',
+      'Recheck radial pulse, grip, and sensation',
+      'Keep fingers exposed for ongoing CSM monitoring'
+    ],
+    pearls: [
+      'Fingers must be visible and free for ongoing circulation checks',
+      'For a shoulder dislocation, immobilize in the position of comfort — do not force neutral',
+      'A clavicle fracture causes the patient to "cradle" the arm — this is the natural splinting position',
+      'Improvised sling: use a large triangular bandage, scarf, or jacket corner'
+    ],
+    diagramType: 'shoulder'
+  },
+  {
+    id: 'buddy-tape',
+    name: 'Buddy Taping',
+    emoji: '🤝',
+    color: '#79c0ff',
+    category: 'Soft / Digits',
+    regions: ['upper','lower'],
+    injuries: ['fracture','dislocation','softtissue'],
+    setting: ['commercial','improvised'],
+    description: 'Taping an injured finger or toe to an adjacent uninjured digit. Simple, effective immobilization for digit fractures and sprains.',
+    indications: [
+      'Finger fractures (phalanges)',
+      'Finger dislocations (after reduction)',
+      'Toe fractures',
+      'Finger sprains with suspected small fractures',
+      'Temporary stabilization of any digit injury'
+    ],
+    contraindications: [
+      'Open fractures — do not tape over open wounds',
+      'Gross deformity or angulation requiring reduction',
+      'Suspected tendon avulsion (mallet finger) — needs DIP extension splint instead',
+      'Circulatory compromise in the digit'
+    ],
+    warnings: [
+      'Always place padding (gauze) BETWEEN the digits before taping',
+      'Tape proximal to the joint — never directly over a joint if possible',
+      'Check capillary refill in the taped digit'
+    ],
+    steps: [
+      'Assess the digit — neurovascular status, deformity',
+      'Gently straighten the digit if mildly angulated (do not force)',
+      'Place a strip of gauze or foam between the injured and adjacent digit',
+      'Apply 1/2-inch tape around both digits — two strips, at the proximal and middle phalanx',
+      'Do not tape directly over joints (prevents mobility assessment)',
+      'Check capillary refill in the fingertip',
+      'Instruct patient to keep the hand elevated'
+    ],
+    pearls: [
+      'ALWAYS put padding between digits — tape directly on skin causes maceration and pain',
+      'For a toe, buddy-tape the 4th and 5th toes together — classic mechanism (stubbing)',
+      'Not a definitive treatment — all digit fractures need X-ray and orthopedic follow-up',
+      'Mallet finger (drooping DIP) needs an extension splint, NOT buddy taping'
+    ],
+    diagramType: 'finger'
+  },
+  {
+    id: 'long-arm-posterior',
+    name: 'Long Arm Posterior Splint',
+    emoji: '💪',
+    color: '#d2a8ff',
+    category: 'Plaster / Fiberglass',
+    regions: ['upper'],
+    injuries: ['fracture','dislocation'],
+    setting: ['hospital'],
+    description: 'Plaster or fiberglass slab applied to the posterior surface of the upper extremity from the palm to the upper arm. Standard ED immobilization for elbow and forearm injuries.',
+    indications: [
+      'Distal humerus fractures',
+      'Elbow fractures and dislocations',
+      'Radial head fractures',
+      'Forearm fractures (both bone forearm)',
+      'Post-reduction stabilization of elbow injuries'
+    ],
+    contraindications: [
+      'Circumferential casting when swelling is expected — use splint only',
+      'Grossly contaminated open fractures needing operative washout'
+    ],
+    warnings: [
+      'Never apply a circular cast in the acute setting — splint only, leave room for swelling',
+      'Elbow should be at 90°, forearm neutral rotation, wrist slight extension (position of function)',
+      'Monitor for compartment syndrome: pain out of proportion, pain with passive stretch'
+    ],
+    steps: [
+      'Measure and cut plaster/fiberglass to extend from knuckles to mid-upper arm',
+      'Dip plaster in warm water; squeeze out excess moisture',
+      'Apply stockinette and webril (cotton padding) to the entire extremity first',
+      'Apply wet plaster slab to the posterior surface of the arm',
+      'Mold in 90° elbow flexion, neutral rotation',
+      'Overwrap with elastic bandage, proximal to distal',
+      'Hold in position until hardened (plaster: 5–7 min; fiberglass: 3 min)',
+      'Perform and document neurovascular exam post-application'
+    ],
+    pearls: [
+      'Used in the ED, not the field — EMTs should use SAM splint or sling pre-hospital',
+      'Compartment syndrome is the critical complication — any EMT should recognize the 5 Ps',
+      '"The cast cannot help the arm that is getting bigger" — always use splints acutely',
+      'Plaster generates heat while curing — warn the patient'
+    ],
+    diagramType: 'elbow'
+  },
+  // ── 5 NEW SPLINT TYPES ──────────────────────────────────────────────────────
+  {
+    id: 'c-collar',
+    name: 'Cervical Collar (C-Collar)',
+    emoji: '🫙',
+    color: '#ffa657',
+    category: 'Spinal Immobilization',
+    regions: ['spine'],
+    injuries: ['fracture','softtissue'],
+    setting: ['commercial'],
+    description: 'Rigid circumferential collar applied to the neck to limit cervical spine movement. Used whenever mechanism of injury suggests possible cervical spine involvement.',
+    indications: [
+      'Any MOI with potential for cervical spine injury (MVC, falls, diving)',
+      'Complaints of neck pain or tenderness after trauma',
+      'Altered mental status following trauma (cannot rule out spinal injury)',
+      'Distracting injuries that prevent reliable pain assessment',
+      'Unconscious trauma patients (assume spinal injury until proven otherwise)'
+    ],
+    contraindications: [
+      'Penetrating neck injuries where collar may compress wound or increase bleeding',
+      'Significant airway compromise where collar prevents management',
+      'Patients who strongly resist application (forced application may cause injury)',
+      'Pre-existing cervical spine disease with known fixed deformity (e.g., ankylosing spondylitis) — splint in position found'
+    ],
+    warnings: [
+      'C-collar alone does NOT fully immobilize the spine — always combine with long backboard or scoop stretcher',
+      'Incorrect sizing causes extension (too large) or flexion (too small) — both harmful',
+      'Do not remove once applied in the field — hospital will clear the spine',
+      'Monitor airway: collar can make intubation difficult — have suction ready'
+    ],
+    steps: [
+      'Maintain manual inline stabilization (MILS) throughout the entire procedure',
+      'Size the collar: measure from the top of the shoulder to the chin with 2 fingers',
+      'Match measurement to collar size markings (extrication, no-neck, short, regular, tall)',
+      'Pre-form the collar if needed; position the chin piece under the chin first',
+      'Slide the back panel behind the neck without losing MILS',
+      'Secure the velcro — snug, able to insert one finger under the front',
+      'Verify the chin is fully supported and the collar is not covering the ears',
+      'Maintain MILS until patient is fully secured to backboard or cot'
+    ],
+    pearls: [
+      'MILS must be maintained from start to finish — the collar is secondary to manual control',
+      'The most common sizing error is going too large — when in doubt, size down',
+      'Stiff neck from muscle spasm ≠ spinal fracture, but treat it as one until cleared',
+      'A properly sized collar allows mouth opening (vomiting) but limits flexion/extension',
+      'In a combative patient, maintaining MILS and rapid packaging may be safer than struggling with a collar'
+    ],
+    diagramType: 'c-collar'
+  },
+  {
+    id: 'board-splint',
+    name: 'Padded Rigid Board Splint',
+    emoji: '🪵',
+    color: '#a5d6ff',
+    category: 'Rigid / Board',
+    regions: ['upper','lower'],
+    injuries: ['fracture','dislocation'],
+    setting: ['commercial','improvised'],
+    description: 'Padded aluminum or wooden board applied alongside a fractured extremity. Non-circumferential by design, making it safe when significant swelling is expected. One of the oldest and most reliable field splints.',
+    indications: [
+      'Long bone fractures of the forearm, humerus, tibia, or fibula',
+      'Fractures with significant swelling where circumferential splints are risky',
+      'Multiple extremity fractures in MCI when resources are limited',
+      'Supplemental splinting alongside a sling or traction device',
+      'Pediatric fractures where moldable splints are difficult to size'
+    ],
+    contraindications: [
+      'Femur fractures — requires traction splint, not board alone',
+      'Joint injuries where board cannot bridge adequately',
+      'Open fractures with significant contamination on the contact surface'
+    ],
+    warnings: [
+      'Board must extend one joint above AND one joint below the fracture site',
+      'Padding between the board and the limb is not optional — bony prominences will develop pressure injuries quickly',
+      'Reassess CSM — boards can slip and apply focal pressure to vessels or nerves'
+    ],
+    steps: [
+      'Assess and expose the injury; perform distal CSM baseline',
+      'Select a board that will extend one joint above and one below the fracture',
+      'Pad the board generously — especially at bony prominences',
+      'Have a partner maintain manual stabilization of the fracture',
+      'Position the padded board alongside (or behind) the limb',
+      'Secure with roller bandage or cravats — start distal and work proximal',
+      'Leave the fracture site accessible if possible for re-assessment',
+      'Reassess CSM; document and transport'
+    ],
+    pearls: [
+      'Non-circumferential design means the limb can swell without losing circulation — critical for high-energy injuries',
+      'Two boards on opposite sides of the limb create superior rigidity for larger bones (e.g., humerus)',
+      'In a pinch, cardboard folded into a channel shape works as an effective improvised board splint',
+      'Board splints are preferred over air splints for open fractures or wounds requiring monitoring'
+    ],
+    diagramType: 'board'
+  },
+  {
+    id: 'pelvic-binder',
+    name: 'Pelvic Binder / SAM Pelvic Sling',
+    emoji: '🔗',
+    color: '#ff7b72',
+    category: 'Circumferential Compression',
+    regions: ['spine'],
+    injuries: ['fracture'],
+    setting: ['commercial'],
+    description: 'Circumferential compression device applied at the level of the greater trochanters. Reduces pelvic volume to tamponade hemorrhage in open-book pelvic fractures. A potentially life-saving intervention.',
+    indications: [
+      'Suspected open-book (AP compression) pelvic fracture',
+      'High-energy MOI with pelvic tenderness or instability (MVC, fall from height)',
+      'Hypotension with suspected pelvic source in trauma patient',
+      'Pelvic pain/instability combined with signs of hemorrhagic shock'
+    ],
+    contraindications: [
+      'Lateral compression pelvic fractures — binder may worsen fracture displacement',
+      'Vertical shear pelvic fractures — binder alone is insufficient',
+      'Do NOT apply to abdomen or iliac crests — must be at greater trochanters only'
+    ],
+    warnings: [
+      'NEVER perform a manual pelvic "rock" exam in the field — it dislodges clots and worsens bleeding',
+      'Incorrect placement (too high) fails to close the fracture and can injure abdominal organs',
+      'Once applied, do NOT remove in the pre-hospital setting — hemorrhage can resume',
+      'A sheet wrapped tightly around the pelvis is an acceptable improvised binder if commercial device unavailable'
+    ],
+    steps: [
+      'Recognize mechanism: high-energy trauma with possible pelvic injury',
+      'Do NOT perform pelvic spring/rock assessment — skip it',
+      'Log roll or slide patient as a unit (maintain spinal precautions)',
+      'Position the binder beneath the patient at the level of the greater trochanters (widest part of hips)',
+      'Bring both ends of the binder up and over the pelvis at the greater trochanter level',
+      'Apply firm circumferential tension and secure according to device instructions',
+      'Internally rotate the feet slightly ("toes in") to help close the pelvis — secure with bandage',
+      'Reassess vital signs — improvement in BP/HR may indicate successful hemorrhage control'
+    ],
+    pearls: [
+      'The retroperitoneal space can hold 3–4 liters of blood — a pelvic binder can be a lifesaving bridge to OR',
+      'Placement at the GREATER TROCHANTERS (not iliac crests) is the most critical technical detail',
+      'A bedsheet folded to about 6 inches wide and wrapped tightly is a valid improvised binder',
+      'Tying the feet in internal rotation ("frog-legged inward") helps mechanically close an open book fracture',
+      'Skin integrity under the binder: prolonged use can cause pressure necrosis — hospital will manage'
+    ],
+    diagramType: 'pelvis'
+  },
+  {
+    id: 'mallet-splint',
+    name: 'Mallet Finger Splint (Stack Splint)',
+    emoji: '☝️',
+    color: '#7ee787',
+    category: 'Digital Extension',
+    regions: ['upper'],
+    injuries: ['softtissue','fracture'],
+    setting: ['commercial','hospital'],
+    description: 'A small rigid or semi-rigid splint that holds the DIP (distal interphalangeal) joint in full extension. Used exclusively for mallet finger — avulsion of the extensor tendon at the fingertip.',
+    indications: [
+      'Mallet finger: extensor tendon avulsion at the DIP joint (classic "jammed finger" with drooping tip)',
+      'Bony mallet: small avulsion fracture at the base of the distal phalanx',
+      'Any injury where the patient cannot actively extend the DIP joint'
+    ],
+    contraindications: [
+      'Large fracture fragments (>1/3 of the joint surface) — may require surgery',
+      'Volar subluxation of the distal phalanx — surgical referral',
+      'Open mallet injuries — wound care first, then splint',
+      'PIP or MCP injuries — different splinting strategy required'
+    ],
+    warnings: [
+      'DIP must be maintained in FULL extension continuously for 6–8 weeks — even one flexion resets the clock',
+      'NEVER flex the DIP during dressing changes — slide splint off while holding the fingertip in extension',
+      'Splint the DIP only — PIP must remain free to prevent stiffness',
+      'Buddy taping alone is NOT adequate for mallet finger'
+    ],
+    steps: [
+      'Identify mallet deformity: patient cannot extend the DIP joint against gravity',
+      'Select appropriate stack splint size for the affected finger',
+      'Hold the DIP joint in full (or very slight hyperextension) — do not flex',
+      'Slide the splint over the finger so the dorsal surface supports the fingertip in extension',
+      'Secure with tape — do not tape so tightly as to impair circulation',
+      'Confirm the PIP joint is completely free to flex and extend',
+      'Instruct patient: DIP must never flex, even during splint changes',
+      'Arrange orthopedic follow-up within 1–2 weeks'
+    ],
+    pearls: [
+      'The DIP must NEVER flex during the entire treatment period — one accidental flex restarts 6–8 weeks',
+      'During splint changes: hold fingertip in extension on a flat surface while the splint is replaced',
+      'If commercial stack splint unavailable: tongue depressor cut to length works as an improvised version',
+      'Mallet finger from basketball/volleyball is very common — EMTs encounter this regularly',
+      'PIP joint must stay free — PIP stiffness is a complication of overzealous immobilization'
+    ],
+    diagramType: 'mallet'
+  },
+  {
+    id: 'sugar-tong-humerus',
+    name: 'Sugar Tong Splint (Humerus)',
+    emoji: '🦴',
+    color: '#cae8ff',
+    category: 'Plaster / Fiberglass',
+    regions: ['upper'],
+    injuries: ['fracture'],
+    setting: ['hospital'],
+    description: 'U-shaped plaster or fiberglass slab that wraps from the axilla, around the elbow, and up the lateral arm. Used in the ED for mid-shaft humerus fractures. Pre-hospital EMTs use sling & swathe instead.',
+    indications: [
+      'Mid-shaft humerus fractures (primary ED indication)',
+      'Distal humerus fractures in some protocols',
+      'Situations where elbow immobilization at 90° is required alongside upper arm support'
+    ],
+    contraindications: [
+      'Pre-hospital setting — sling & swathe is the appropriate pre-hospital alternative',
+      'Open fractures requiring operative washout',
+      'Circumferential swelling — use splint, never circular cast'
+    ],
+    warnings: [
+      'Radial nerve runs in the spiral groove of the humerus — radial nerve palsy (wrist drop) is a common complication of mid-shaft humerus fractures',
+      'Always assess wrist and finger extension before and after application',
+      'Significant shortening or angulation may require hanging cast technique instead'
+    ],
+    steps: [
+      'Apply stockinette the full length of the arm',
+      'Pad with webril (cotton), paying extra attention to the axilla and bony prominences',
+      'Measure plaster/fiberglass from the axilla, around the olecranon, and up the lateral arm',
+      'Wet the slab; apply starting from the axilla down to the olecranon and back up the lateral humerus',
+      'Mold elbow at 90°, forearm in neutral rotation',
+      'Overwrap with elastic bandage; hold until hardened',
+      'Apply a collar-and-cuff or sling to support the forearm',
+      'Perform and document thorough neurological exam including radial nerve function (wrist and finger extension)'
+    ],
+    pearls: [
+      'Radial nerve palsy (wrist drop, inability to extend fingers) may be present at time of injury — document before splinting',
+      'EMT takeaway: recognize wrist drop as a humerus fracture complication and document it',
+      'Pre-hospital: sling & swathe with optional SAM splint alongside the humerus is appropriate',
+      'Mid-shaft humerus fractures are sometimes treated non-operatively with a functional brace — transport for evaluation'
+    ],
+    diagramType: 'sugar-tong'
+  }
+];
+
+// ─── QUIZ QUESTIONS ───────────────────────────────────────────────────────────
+
+const QUESTIONS = [
+  // ── Original 10 ──────────────────────────────────────────────────────────────
+  {
+    scenario: 'You arrive on scene to a 28-year-old male who fell off a ladder. He has <strong>severe pain and obvious deformity of the mid-thigh</strong>, the leg appears shortened and externally rotated. Vitals: BP 100/70, HR 120. Which splint is most appropriate?',
+    options: ['SAM Splint', 'Hare or Sager Traction Splint', 'Air Splint', 'Pillow Splint'],
+    correct: 1,
+    explanation: 'Mid-shaft femur fractures are the primary indication for a traction splint (Hare or Sager). The femoral canal can hold 1.5–2L of blood — traction reduces the fracture gap, decreasing hemorrhage. The shortened, externally rotated leg is a classic femur fracture presentation. Air and SAM splints provide no meaningful femur stabilization.'
+  },
+  {
+    scenario: 'A 45-year-old woman slipped on ice. She has <strong>pain, swelling, and tenderness over the lateral ankle</strong>. Pedal pulse is present, sensation intact. You have limited supplies. What is the most appropriate field splint?',
+    options: ['Traction Splint', 'Pillow Splint', 'Buddy Tape', 'Sling & Swathe'],
+    correct: 1,
+    explanation: 'A pillow splint is ideal for ankle and foot injuries. It conforms to the shape, provides gentle compression, and is extremely comfortable. Traction splints are only for femur fractures. Buddy taping is for digits. Sling & swathe is for upper extremity.'
+  },
+  {
+    scenario: 'You have a patient with a <strong>suspected shoulder dislocation</strong> after a football tackle. The arm is held slightly abducted and externally rotated. He is in significant pain. Best immobilization:',
+    options: ['Hare Traction Splint', 'SAM Splint in anatomical position', 'Sling & Swathe in position of comfort', 'Air Splint'],
+    correct: 2,
+    explanation: 'Sling & swathe in the position of comfort is correct. Never force a dislocated shoulder into anatomical position — you risk fracturing the humeral head or injuring the axillary nerve. The sling supports the arm weight; the swathe prevents painful movement. "Splint them as they lie" applies here.'
+  },
+  {
+    scenario: 'An 8-year-old fell from monkey bars and has <strong>point tenderness of the wrist and a "dinner fork" deformity</strong>. Which splint and position is appropriate?',
+    options: ['Buddy tape to adjacent finger', 'SAM splint with wrist in slight extension', 'Traction splint', 'Sling only, no rigid splint needed'],
+    correct: 1,
+    explanation: 'A "dinner fork" deformity suggests a Colles fracture (distal radius). A SAM splint molded to extend from the palm to mid-forearm, with the wrist in slight dorsiflexion (position of function), is appropriate. Traction splints are for femur only. Buddy tape is for digits. A sling alone provides inadequate immobilization for this fracture.'
+  },
+  {
+    scenario: 'You\'re treating a victim of a motorcycle crash who has <strong>an angulated tibial fracture with an open wound</strong>. Which type of splint is contraindicated?',
+    options: ['SAM Splint (padded)', 'Vacuum Splint', 'Air / Pneumatic Splint', 'Padded Board Splint'],
+    correct: 2,
+    explanation: 'Air splints are contraindicated for open fractures with protruding bone, because the circumferential pressure can impair circulation and push contamination into the wound. SAM splints (padded), vacuum splints, and board splints can all be applied over a sterile dressing without circumferential pressure.'
+  },
+  {
+    scenario: 'A patient has a <strong>suspected femur fracture AND an ipsilateral knee injury</strong>. You were going to apply a Hare traction splint. You should:',
+    options: ['Apply the traction splint anyway — femur takes priority', 'Use a padded board splint or vacuum splint instead', 'The ankle hitch is contraindicated — do not apply traction to this limb', 'Apply the air splint to the entire leg'],
+    correct: 2,
+    explanation: 'A knee injury is a contraindication to the ankle hitch required for traction splints. Traction through a damaged knee can cause catastrophic additional injury. Use a padded long board splint or vacuum splint instead. Know your local protocol regarding exceptions.'
+  },
+  {
+    scenario: 'You\'re buddy-taping a patient\'s broken ring finger to the middle finger. Before you tape, what is the most critical step?',
+    options: ['Apply antiseptic spray between the fingers', 'Place gauze/foam padding BETWEEN the digits', 'Tape directly over the proximal IP joint', 'Check blood pressure'],
+    correct: 1,
+    explanation: 'Always place padding (gauze or foam) between the digits before buddy taping. Direct tape on skin causes maceration, blistering, and pain with removal. This is perhaps the most commonly forgotten step in digit splinting.'
+  },
+  {
+    scenario: 'While transporting a patient with a Hare traction splint applied for a femur fracture, the patient reports <strong>worsening pain and the traction feels loose</strong>. Your best action:',
+    options: ['Remove the traction splint and use a long board', 'Reassess and retighten traction to restore ~10% body weight tension', 'Ignore — some pain is expected with femur fractures', 'Apply an air splint over the traction splint'],
+    correct: 1,
+    explanation: 'Traction splints can loosen during transport as swelling and muscle spasm change. Reassess the traction tension and retighten to approximately 10% of body weight. The patient should report pain relief at correct tension. Removing traction risks re-injury and increased hemorrhage.'
+  },
+  {
+    scenario: 'A vacuum splint is MOST advantageous over a SAM splint in which scenario?',
+    options: ['Mid-shaft femur fracture', 'A complex knee dislocation that must be transported in a deformed position', 'Simple wrist fracture in a cooperative adult', 'Clavicle fracture'],
+    correct: 1,
+    explanation: 'Vacuum splints excel when a joint cannot or should not be realigned and must be transported in a deformed position. They conform to and harden around whatever shape the limb is in. SAM splints require a more standardized limb position.'
+  },
+  {
+    scenario: 'Which is NOT a component of the CSM assessment performed before and after splint application?',
+    options: ['Capillary refill (circulation)', 'Strength and motor function (movement)', 'Skin rash and dermatology assessment', 'Sensation (numbness/tingling distal to injury)'],
+    correct: 2,
+    explanation: 'CSM stands for Circulation, Sensation, and Movement. Circulation: distal pulse and capillary refill < 2 sec. Sensation: numbness or tingling distal to fracture. Movement: wiggle fingers or toes. Skin rash assessment is not part of the standard CSM check.'
+  },
+  // ── New questions for new splint types ───────────────────────────────────────
+  {
+    scenario: 'A 22-year-old is brought in from a high-speed MVC. She has severe pelvic pain, blood pressure is 82/50 and falling, HR 138. On exam, <strong>the pelvis feels unstable</strong>. What is the most important immediate intervention (after airway/breathing)?',
+    options: ['Apply a traction splint to both femurs', 'Apply a pelvic binder at the level of the greater trochanters', 'Perform a manual pelvic rock exam to confirm the fracture', 'Apply a long backboard and transport without further intervention'],
+    correct: 1,
+    explanation: 'Pelvic binder application at the greater trochanters is the answer. Open-book pelvic fractures can harbor 3–4 liters of retroperitoneal bleeding. The binder reduces pelvic volume and tamponades hemorrhage. Critically: NEVER perform a pelvic rock exam in the field — it dislodges clots and worsens hemorrhage. This is one of the most high-stakes field interventions an EMT can perform.'
+  },
+  {
+    scenario: 'A basketball player jammed his finger and presents with <strong>a drooping fingertip that he cannot extend at the last joint (DIP)</strong>, despite having normal PIP and MCP movement. What is the correct splint and position?',
+    options: ['Buddy tape the finger to its neighbor', 'Stack (mallet) splint with DIP in full extension', 'SAM splint with the entire finger in flexion', 'Sling the hand against the chest'],
+    correct: 1,
+    explanation: 'This is a classic mallet finger — avulsion of the extensor tendon at the DIP. The only correct treatment is a stack/mallet splint holding the DIP in FULL extension. Buddy taping does NOT hold the DIP in extension and allows flexion, preventing healing. The PIP must remain free. The DIP must never flex during the 6–8 week treatment period.'
+  },
+  {
+    scenario: 'You are applying a cervical collar to a trauma patient. After sizing, you notice the collar is slightly too large. What is the clinical consequence of an oversized C-collar?',
+    options: ['It will cause the neck to flex forward, increasing spinal injury risk', 'It will extend the neck backward, potentially worsening a cervical fracture', 'It has no clinical significance as long as it stays on', 'It reduces the risk of airway compromise'],
+    correct: 1,
+    explanation: 'An oversized C-collar causes hyperextension of the cervical spine. This is dangerous for a patient with an unstable cervical fracture. An undersized collar causes flexion. Both are harmful. Always size correctly: measure from shoulder to chin. When in doubt, size down rather than up, and maintain MILS regardless of collar size.'
+  },
+  {
+    scenario: 'You are splinting a tibia fracture with significant swelling already present. Comparing a <strong>padded board splint to an air splint</strong> for this injury, which is more appropriate and why?',
+    options: ['Air splint — provides better circumferential support', 'Board splint — non-circumferential design allows limb to swell without losing circulation', 'They are equivalent — choose based on availability', 'Air splint — altitude changes do not affect it'],
+    correct: 1,
+    explanation: 'The board splint\'s key advantage is that it is non-circumferential. As swelling increases, a circumferential splint (like an air splint) can act like a tourniquet. A board splint applied alongside the limb leaves room for expansion. This is especially important with high-energy injuries where significant post-injury swelling is expected.'
+  },
+  {
+    scenario: 'A patient with a mid-shaft humerus fracture after a direct blow has <strong>wrist drop and inability to extend the fingers</strong> on that side. What does this finding indicate and what should you document?',
+    options: ['This is normal — wrist drop is expected from pain inhibition', 'Radial nerve injury — document this neurological deficit clearly before splinting', 'Ulnar nerve injury — requires immediate surgical intervention', 'Axillary nerve injury — apply sling only, no documentation needed'],
+    correct: 1,
+    explanation: 'Wrist drop (inability to extend the wrist and fingers) indicates radial nerve injury. The radial nerve runs in the spiral groove of the mid-shaft humerus and is commonly injured with mid-shaft fractures. This deficit must be documented before splinting to distinguish pre-existing injury from splint-induced compression. Pre-hospital: apply sling & swathe, document the deficit, and transport.'
+  },
+  {
+    scenario: 'Where EXACTLY should a pelvic binder be positioned on the patient\'s body?',
+    options: ['At the level of the iliac crests (hip bones)', 'At the level of the greater trochanters (widest part of the hips)', 'At the level of the umbilicus for maximum compression', 'At the symphysis pubis'],
+    correct: 1,
+    explanation: 'The pelvic binder must be placed at the level of the greater trochanters — the widest part of the hips. This is where circumferential compression most effectively closes an open-book pelvic fracture. Placing it at the iliac crests is a common error that reduces effectiveness and can cause abdominal injury. Feet should be internally rotated ("toes in") to help close the fracture.'
+  },
+  {
+    scenario: 'You are treating a mallet finger. During transport, the patient\'s stack splint comes loose and they accidentally <strong>flex the DIP joint once</strong> before you reapply the splint. What do you tell them?',
+    options: ['One flex is fine as long as the splint goes back on immediately', 'That single flexion has restarted the entire 6–8 week treatment clock', 'Flexion is acceptable as long as extension is still possible', 'The treatment period is shortened after one accidental flex'],
+    correct: 1,
+    explanation: 'This is the defining pearl of mallet finger care: even a single unintentional DIP flexion restarts the entire 6–8 week immobilization period. The extensor tendon cannot heal if it is allowed to become slack even momentarily. Patients must be explicitly warned of this. Splint changes must be done by holding the fingertip in extension on a flat surface while the splint is replaced — never allowing the DIP to flex.'
+  },
+  {
+    scenario: 'An unconscious trauma patient arrives from a high-speed MVC. Your partner asks whether to apply a cervical collar since the patient cannot report neck pain. You should:',
+    options: ['Skip it — no neck pain reported means no cervical injury', 'Apply the collar — unconscious trauma patients cannot reliably report spinal injury and receive full spinal precautions', 'Wait for hospital X-rays before immobilizing', 'Only immobilize if the patient has visible neck deformity'],
+    correct: 1,
+    explanation: 'Unconscious trauma patients always receive full spinal precautions including C-collar. They cannot report pain or tenderness — the only reliable indicator available to you. High-energy MOI plus unconsciousness equals assumed spinal injury until cleared by imaging in the ED. Apply the collar, maintain MILS, and secure to a long backboard.'
+  },
+  // ── Additional questions (2 per splint type) ─────────────────────────────────
+  {
+    scenario: 'You are applying a SAM splint to a suspected wrist fracture. Before securing it, your partner reminds you to mold it first. What technique most significantly increases a SAM splint\'s rigidity?',
+    options: ['Warming it with your hands before bending', 'Creating a C-curve or T-bar bend in the aluminum core', 'Applying it flat with extra layers of gauze underneath', 'Wetting it like plaster before use'],
+    correct: 1,
+    explanation: 'The C-curve (three-point bend) is what transforms a floppy SAM splint into a rigid support. Without molding, the flat aluminum provides surprisingly little resistance. The arch created by the C-curve distributes load and resists bending — just like corrugated cardboard is stronger than flat cardboard. Always mold before applying.'
+  },
+  {
+    scenario: 'Mid-transport, you notice the vacuum splint on a patient\'s injured knee has gone completely soft and is no longer rigid. What is the most likely cause and correct response?',
+    options: ['Normal — vacuum splints relax over time, just re-tighten the straps', 'The splint has been punctured — apply a backup rigid splint immediately', 'The beads have settled — knead the splint to redistribute them', 'Re-inflate with air to restore rigidity'],
+    correct: 1,
+    explanation: 'A vacuum splint that goes soft has been punctured and lost its seal. Unlike air splints which can be re-inflated, a punctured vacuum splint cannot be field-repaired. Apply your backup splint immediately (SAM or padded board). This is why carrying a backup when using vacuum splints is essential — they are excellent but fragile.'
+  },
+  {
+    scenario: 'Which statement BEST describes the key mechanical difference between the Sager and Hare traction splints?',
+    options: ['The Hare is unipolar and applies traction via the ankle only; the Sager is bipolar', 'The Sager is unipolar and applies traction medially against the ischium; the Hare is bipolar and applies against the groin', 'Both are functionally identical — choice is based only on availability', 'The Sager uses a windlass mechanism; the Hare uses a ratchet gauge'],
+    correct: 1,
+    explanation: 'Hare = bipolar (two poles), ischial pad seats in the groin/inguinal fold, windlass mechanism at the distal end. Sager = unipolar (one central shaft), padded perineal cushion applies against the ischium (medial), built-in traction gauge on the shaft. The Sager sits flat on the backboard and can be used bilaterally — key advantages in MVC patients.'
+  },
+  {
+    scenario: 'A patient arrives from a motorcycle crash with suspected bilateral femur fractures. Which traction splint system is best suited for this situation?',
+    options: ['One Hare traction splint applied to the worse leg only', 'Two Sager traction splints, one applied to each leg', 'A single traction splint to the dominant leg; board splint to the other', 'Traction splints are contraindicated when both femurs are fractured'],
+    correct: 1,
+    explanation: 'Two Sager splints can be applied simultaneously — one per leg. The Sager\'s medial unipolar design allows bilateral use without the splints interfering with each other. The Hare traction splint cannot practically be used bilaterally. Bilateral femur fractures represent massive hemorrhage risk (up to 4L blood loss) — traction on both legs is critical.'
+  },
+  {
+    scenario: 'While hiking 5 miles from the trailhead, a companion sustains a suspected mid-shaft forearm fracture. No commercial splints are available. What is the single most important principle when building an improvised splint?',
+    options: ['Use the hardest material available regardless of length', 'The splint must extend one joint above AND one joint below the fracture', 'Wrap the limb as tightly as possible to prevent movement', 'Only splint if the patient cannot walk out on their own'],
+    correct: 1,
+    explanation: 'One joint above AND one joint below is the golden rule of splinting. For a forearm fracture, the splint must span from the hand past the elbow. This prevents rotation at the fracture site, which is the primary cause of re-injury during transport. Without bridging both adjacent joints, even a rigid improvised splint provides minimal immobilization.'
+  },
+  {
+    scenario: 'When securing an improvised splint, where should the securing ties be positioned relative to the fracture site?',
+    options: ['Directly over the fracture to prevent it from shifting', 'On either side of the fracture site, never over it or over bony prominences', 'Only proximal to the fracture to allow distal swelling', 'Position does not matter as long as the splint is tight'],
+    correct: 1,
+    explanation: 'Ties over the fracture site cause direct pressure on the injury and significant pain. Ties over bony prominences cause pressure injuries quickly. Position ties on either side of the fracture at soft tissue areas, knots to the side (not on top of the limb). "Snug but not tight" — you should be able to slip one finger under each tie.'
+  },
+  {
+    scenario: 'During transport with a pillow splint on an ankle injury, the patient reports increasing pain and you observe pale, cool toes with capillary refill of 4 seconds. What is your immediate action?',
+    options: ['Administer pain medication and continue transport', 'Loosen or remove the securing bandages immediately and reassess', 'Elevate the limb higher and apply ice', 'Document the finding but continue — some swelling is expected'],
+    correct: 1,
+    explanation: 'Pale, cool toes with capillary refill > 2 seconds indicate circulatory compromise — the splint is too tight. Loosen immediately. This is a CSM failure that should have been caught on the regular 5-minute reassessments. If loosening does not restore circulation within 1–2 minutes, remove the splint entirely and reapply more loosely. Document everything.'
+  },
+  {
+    scenario: 'A patient with a clavicle fracture has a sling applied but keeps moving their arm outward. What is the purpose of the swathe, and why does this patient need it?',
+    options: ['The swathe elevates the arm to reduce swelling at the clavicle', 'The swathe binds the arm against the torso to prevent shoulder rotation and movement at the fracture site', 'The swathe replaces the sling for clavicle injuries specifically', 'The swathe prevents the sling knot from slipping'],
+    correct: 1,
+    explanation: 'The sling supports the arm weight and reduces gravitational pull on the fracture. The swathe binds the arm against the chest to prevent the arm from swinging away from the body, which would produce rotation and distraction forces at the clavicle fracture. Without the swathe, a sling alone allows too much motion — both are always used together for clavicle and proximal humerus injuries.'
+  },
+  {
+    scenario: 'You are buddy-taping a patient\'s fractured 5th (little) toe. Which toe should it be taped to, and what must be placed between them?',
+    options: ['The 3rd toe; no padding needed for small toes', 'The 4th toe; padding (gauze or foam) must be placed between them', 'Either neighbor; tape whichever is more convenient', 'Do not buddy tape toes — use a rigid splint only'],
+    correct: 1,
+    explanation: 'The 4th toe is the correct neighbor for the 5th. Always tape to the immediately adjacent digit. Padding between the toes is mandatory — direct tape-to-skin contact causes maceration (skin breakdown from moisture), blistering, and painful removal. Confirm the 4th toe is uninjured before using it as the "buddy." Two strips of tape: one at the proximal phalanx, one at the middle phalanx.'
+  },
+  {
+    scenario: 'A patient with a posterior long arm splint for an elbow fracture reports forearm pain of 9/10 that worsens when you gently extend their fingers. The pain is not relieved by elevation or analgesia. What must you immediately suspect?',
+    options: ['Medication side effect — switch analgesics', 'Compartment syndrome — requiring immediate transport and surgical evaluation', 'Normal post-fracture pain — reassure the patient', 'The splint is too short — apply a longer one'],
+    correct: 1,
+    explanation: 'Pain out of proportion, worsening with passive stretch, and unresponsive to analgesics are the hallmark signs of compartment syndrome. The 5 Ps: Pain, Pressure, Paresthesia, Paralysis (late), Pallor. Pain with passive stretch of the muscles in the affected compartment is the earliest and most reliable sign. This is a surgical emergency requiring fasciotomy. Transport immediately and alert the receiving hospital.'
+  },
+  {
+    scenario: 'Why is a posterior splint always preferred over a circumferential cast when treating acute fractures in the emergency setting?',
+    options: ['A cast is cheaper and faster to apply', 'A splint leaves room for swelling; a circumferential cast can become a tourniquet as edema increases', 'Casts provide inferior immobilization to splints in all situations', 'Plaster is always used for splints and is stronger than cast material'],
+    correct: 1,
+    explanation: 'Acute fractures always swell. A circumferential cast has no give — as the limb expands, the cast compresses it like a tourniquet, causing compartment syndrome. A posterior splint is only on one side of the limb, leaving the soft tissue free to swell. This is one of the most fundamental ED orthopedic principles: never apply a circular cast acutely. Splint first, cast later once swelling resolves.'
+  },
+  {
+    scenario: 'You are splinting a mid-shaft humerus fracture in the field and have both a SAM splint and a padded board available. What is the most effective way to use these together?',
+    options: ['Use only the SAM splint — adding the board creates excess weight', 'Apply boards on the medial and lateral sides of the humerus, then secure with a sling and swathe', 'Use only the board — SAM splints are too flexible for the humerus', 'Apply the SAM splint distally and the board proximally'],
+    correct: 1,
+    explanation: 'The humerus is a large bone with strong muscles on all sides. A single board allows rotation. Applying boards on both medial and lateral sides creates a rigid channel that prevents rotation and angulation. Secure with roller gauze, then apply a sling and swathe to keep the arm against the body. This combination is far superior to either alone for mid-shaft humerus fractures.'
+  },
+  {
+    scenario: 'What is the most clinically significant neurological finding to specifically assess for and document BEFORE splinting a mid-shaft humerus fracture?',
+    options: ['Biceps reflex', 'Wrist drop and inability to extend the fingers — indicating radial nerve injury', 'Grip strength only', 'Sensation in the palm'],
+    correct: 1,
+    explanation: 'The radial nerve runs in the spiral groove of the humerus and is injured in up to 18% of mid-shaft humerus fractures. Wrist drop — inability to actively extend the wrist and fingers — is the classic presentation. This MUST be documented before splinting. If found after splinting, it is impossible to know whether the nerve was injured by the fracture or compressed by the splint. Pre-hospital: apply sling and swathe, document the deficit clearly.'
+  },
+  {
+    scenario: 'A patient is transported by helicopter after an air splint was applied on scene. At altitude, the patient reports increasing tightness and pain in the splinted arm. What is the most likely cause?',
+    options: ['The splint fabric tightened due to temperature drop', 'Decreased atmospheric pressure at altitude caused the air inside to expand, over-inflating the splint', 'The fracture has worsened during transport', 'This is a normal sensation and does not require intervention'],
+    correct: 1,
+    explanation: "As altitude increases, atmospheric pressure decreases. By Boyle's Law, the air inside the splint expands, increasing intra-splint pressure and compressing the limb. The splint should be partially deflated during air transport and rechecked regularly. This problem is unique to pneumatic (air) splints — vacuum splints and rigid splints are not affected by altitude changes. Always ask about air transport when choosing a splint type."
+  },
+  {
+    scenario: 'The Sager traction splint has a built-in traction gauge. A patient weighs approximately 180 lbs. Using the 10% body weight guideline, what is the target traction force, and what should confirm you have the right amount?',
+    options: ['18 lbs; confirmed by the leg returning to normal length', 'About 18 lbs; confirmed when the patient reports pain relief in the thigh', '180 lbs; apply maximum tension until the windlass locks', 'Traction amount does not matter — apply as tight as possible'],
+    correct: 1,
+    explanation: 'Target traction is approximately 10% of body weight — about 18 lbs for a 180 lb patient. The built-in gauge on the Sager removes guesswork; always use it. The key clinical confirmation is patient-reported pain relief: when correct traction is achieved, muscle spasm decreases and pain significantly improves. Over-traction (pulling too hard) can cause neurovascular injury. Never exceed 15 lbs on a pediatric patient.'
+  }
+];
+
+
+// ─── DIAGRAMS ─────────────────────────────────────────────────────────────────
+
+function getDiagram(type) {
+  var diagrams = {
+    forearm: '<svg style="max-width:100%;height:auto" viewBox="0 0 260 160" xmlns="http://www.w3.org/2000/svg"><text x="130" y="13" text-anchor="middle" fill="#9ca3af" font-size="10" font-family="sans-serif">SAM Splint — Posterior Forearm</text><path d="M50,58 Q38,58 36,80 Q38,102 50,102 L205,102 Q222,102 224,80 Q222,58 205,58 Z" fill="#c8956c" stroke="#a07050" stroke-width="1.5"/><ellipse cx="42" cy="80" rx="16" ry="26" fill="#c8956c" stroke="#a07050" stroke-width="1.2"/><line x1="58" y1="70" x2="210" y2="68" stroke="#d4c9b5" stroke-width="2.5" stroke-opacity="0.35" stroke-linecap="round"/><line x1="58" y1="90" x2="210" y2="93" stroke="#d4c9b5" stroke-width="2.5" stroke-opacity="0.35" stroke-linecap="round"/><path d="M35,102 Q130,124 225,102" stroke="#d4c9b5" stroke-width="9" fill="none" stroke-opacity="0.85" stroke-linecap="round"/><path d="M35,102 Q130,132 225,102" stroke="#5b9bd5" stroke-width="4.5" fill="none" stroke-linecap="round"/><rect x="88" y="55" width="9" height="73" rx="4" fill="#4878af" opacity="0.9"/><rect x="138" y="55" width="9" height="73" rx="4" fill="#4878af" opacity="0.9"/><rect x="185" y="55" width="9" height="65" rx="4" fill="#4878af" opacity="0.9"/><text x="42" y="150" text-anchor="middle" fill="#9ca3af" font-size="8" font-family="sans-serif">Elbow</text><text x="214" y="150" text-anchor="middle" fill="#9ca3af" font-size="8" font-family="sans-serif">Wrist</text><text x="130" y="148" text-anchor="middle" fill="#5b9bd5" font-size="7.5" font-family="sans-serif">C-curve slab</text><text x="65" y="67" text-anchor="start" fill="#d4c9b5" font-size="7" font-family="sans-serif">Radius</text><text x="65" y="94" text-anchor="start" fill="#d4c9b5" font-size="7" font-family="sans-serif">Ulna</text><text x="130" y="157" text-anchor="middle" fill="#e3b341" font-size="7.5" font-family="sans-serif">C-curve bend ⟶ rigidity without full cast</text></svg>',
+    'lower-leg': '<svg style="max-width:100%;height:auto" viewBox="0 0 260 160" xmlns="http://www.w3.org/2000/svg"><text x="130" y="13" text-anchor="middle" fill="#9ca3af" font-size="10" font-family="sans-serif">Air / Pneumatic Splint — Lower Leg</text><path d="M48,60 Q35,58 33,80 Q35,105 48,106 L195,106 Q216,106 218,85 Q218,62 205,60 Z" fill="#c8956c" stroke="#a07050" stroke-width="1.5"/><ellipse cx="40" cy="82" rx="17" ry="28" fill="#c8956c" stroke="#a07050" stroke-width="1.2"/><ellipse cx="214" cy="83" rx="10" ry="20" fill="#c8956c" stroke="#a07050" stroke-width="1.2"/><line x1="56" y1="70" x2="205" y2="68" stroke="#d4c9b5" stroke-width="3" stroke-opacity="0.3" stroke-linecap="round"/><line x1="56" y1="90" x2="205" y2="93" stroke="#d4c9b5" stroke-width="2" stroke-opacity="0.25" stroke-linecap="round"/><path d="M25,42 Q22,35 55,32 L195,30 Q232,30 238,48 L238,120 Q238,132 205,133 L55,133 Q22,133 25,118 Z" fill="#5b9bd5" fill-opacity="0.08" stroke="#5b9bd5" stroke-width="1.5" stroke-dasharray="5,3"/><circle cx="25" cy="80" r="6" fill="#4878af" stroke="#5b9bd5" stroke-width="1.2"/><rect x="12" y="77" width="12" height="6" rx="2" fill="#5b9bd5"/><text x="35" y="78" text-anchor="start" fill="#5b9bd5" font-size="7" font-family="sans-serif">valve</text><ellipse cx="236" cy="83" rx="6" ry="14" fill="#c8956c" stroke="#a07050" stroke-width="1" opacity="0.7"/><text x="38" y="150" text-anchor="middle" fill="#9ca3af" font-size="8" font-family="sans-serif">Knee</text><text x="210" y="150" text-anchor="middle" fill="#9ca3af" font-size="8" font-family="sans-serif">Ankle</text><text x="130" y="150" text-anchor="middle" fill="#3fb950" font-size="7.5" font-family="sans-serif">Open ends — check toes for CMS</text><text x="130" y="158" text-anchor="middle" fill="#e3b341" font-size="7.5" font-family="sans-serif">Boyle\'s Law: deflate at altitude</text></svg>',
+    knee: '<svg style="max-width:100%;height:auto" viewBox="0 0 260 160" xmlns="http://www.w3.org/2000/svg"><text x="130" y="13" text-anchor="middle" fill="#9ca3af" font-size="10" font-family="sans-serif">Vacuum Splint — Conforms &amp; Hardens</text><path d="M80,38 Q72,38 70,80 Q72,122 80,122 L160,122 Q168,122 170,80 Q168,38 160,38 Z" fill="#c8956c" stroke="#a07050" stroke-width="1.5"/><path d="M60,22 Q48,22 46,80 Q48,138 60,140 L180,140 Q192,138 194,80 Q192,22 180,22 Z" fill="#bc8cff" fill-opacity="0.1" stroke="#bc8cff" stroke-width="2"/><circle cx="63" cy="35" r="3" fill="#bc8cff" opacity="0.45"/><circle cx="55" cy="50" r="3" fill="#bc8cff" opacity="0.45"/><circle cx="63" cy="65" r="3" fill="#bc8cff" opacity="0.45"/><circle cx="55" cy="80" r="3" fill="#bc8cff" opacity="0.45"/><circle cx="63" cy="95" r="3" fill="#bc8cff" opacity="0.45"/><circle cx="55" cy="110" r="3" fill="#bc8cff" opacity="0.45"/><circle cx="63" cy="125" r="3" fill="#bc8cff" opacity="0.45"/><circle cx="177" cy="35" r="3" fill="#bc8cff" opacity="0.45"/><circle cx="185" cy="50" r="3" fill="#bc8cff" opacity="0.45"/><circle cx="177" cy="65" r="3" fill="#bc8cff" opacity="0.45"/><circle cx="185" cy="80" r="3" fill="#bc8cff" opacity="0.45"/><circle cx="177" cy="95" r="3" fill="#bc8cff" opacity="0.45"/><circle cx="185" cy="110" r="3" fill="#bc8cff" opacity="0.45"/><circle cx="177" cy="125" r="3" fill="#bc8cff" opacity="0.45"/><rect x="186" y="74" width="22" height="12" rx="5" fill="#4878af" stroke="#bc8cff" stroke-width="1.2"/><text x="210" y="82" text-anchor="start" fill="#bc8cff" font-size="7" font-family="sans-serif">suction</text><text x="120" y="22" text-anchor="middle" fill="#9ca3af" font-size="7.5" font-family="sans-serif">Step 1: position limb</text><text x="120" y="142" text-anchor="middle" fill="#bc8cff" font-size="7.5" font-family="sans-serif">Step 2: evacuate air</text><text x="120" y="150" text-anchor="middle" fill="#bc8cff" font-size="7.5" font-family="sans-serif">Beads interlock — rigid in seconds</text><text x="120" y="158" text-anchor="middle" fill="#e3b341" font-size="7.5" font-family="sans-serif">Conforms to injury position</text></svg>',
+    traction: '<svg style="max-width:100%;height:auto" viewBox="0 0 260 160" xmlns="http://www.w3.org/2000/svg"><text x="130" y="13" text-anchor="middle" fill="#9ca3af" font-size="10" font-family="sans-serif">Traction Splint — Femur Fracture</text><path d="M15,50 Q10,60 12,80 Q14,100 20,105 L35,105 Q42,102 42,80 Q42,58 35,50 Z" fill="#c8956c" stroke="#a07050" stroke-width="1.5" opacity="0.6"/><rect x="8" y="58" width="30" height="14" rx="6" fill="#4878af" stroke="#5b9bd5" stroke-width="1.2"/><text x="8" y="85" text-anchor="start" fill="#5b9bd5" font-size="7" font-family="sans-serif">Ischial</text><text x="8" y="93" text-anchor="start" fill="#5b9bd5" font-size="7" font-family="sans-serif">ring</text><path d="M35,62 Q38,62 38,80 Q38,98 35,98 L190,100 Q205,100 208,82 Q205,62 190,62 Z" fill="#c8956c" stroke="#a07050" stroke-width="1.5"/><line x1="40" y1="80" x2="200" y2="80" stroke="#d4c9b5" stroke-width="3" stroke-opacity="0.35" stroke-linecap="round"/><line x1="118" y1="72" x2="115" y2="90" stroke="#f0883e" stroke-width="1.8" stroke-dasharray="2,2"/><text x="120" y="68" text-anchor="middle" fill="#f0883e" font-size="7" font-family="sans-serif">Fx</text><line x1="12" y1="115" x2="245" y2="115" stroke="#a0a8b0" stroke-width="4" stroke-linecap="round"/><rect x="228" y="108" width="20" height="15" rx="4" fill="#a0a8b0" stroke="#e3b341" stroke-width="1.5"/><circle cx="238" cy="115" r="4" fill="#e3b341"/><path d="M202,98 Q210,100 215,110 Q220,118 215,122 Q208,128 202,125 Q196,120 196,110 Q198,100 202,98 Z" fill="#4878af" stroke="#2d6fa5" stroke-width="1.2"/><rect x="65" y="58" width="10" height="44" rx="4" fill="#4878af" opacity="0.85"/><rect x="155" y="58" width="10" height="44" rx="4" fill="#4878af" opacity="0.85"/><text x="22" y="148" text-anchor="middle" fill="#9ca3af" font-size="8" font-family="sans-serif">Hip</text><text x="210" y="148" text-anchor="middle" fill="#9ca3af" font-size="8" font-family="sans-serif">Ankle</text><text x="238" y="130" text-anchor="middle" fill="#e3b341" font-size="7" font-family="sans-serif">Ratchet</text><text x="130" y="148" text-anchor="middle" fill="#3fb950" font-size="7.5" font-family="sans-serif">Pull aligned with long bone axis</text><text x="130" y="157" text-anchor="middle" fill="#e3b341" font-size="7.5" font-family="sans-serif">Strap proximal &amp; distal — avoid knee</text></svg>',
+    improvised: '<svg style="max-width:100%;height:auto" viewBox="0 0 260 160" xmlns="http://www.w3.org/2000/svg"><text x="130" y="13" text-anchor="middle" fill="#9ca3af" font-size="10" font-family="sans-serif">Improvised Splint — Field Expedient</text><path d="M40,65 Q28,65 26,82 Q28,98 40,98 L205,98 Q220,98 222,82 Q220,65 205,65 Z" fill="#c8956c" stroke="#a07050" stroke-width="1.5"/><ellipse cx="33" cy="81" rx="15" ry="22" fill="#c8956c" stroke="#a07050" stroke-width="1.2"/><rect x="30" y="52" width="188" height="56" rx="8" fill="#d4c9b5" stroke="#b0a89a" stroke-width="1" fill-opacity="0.6"/><rect x="28" y="44" width="190" height="14" rx="5" fill="#8B6347" stroke="#6B4327" stroke-width="1.5"/><line x1="48" y1="44" x2="48" y2="58" stroke="#6B4327" stroke-width="0.7" opacity="0.5"/><line x1="68" y1="44" x2="68" y2="58" stroke="#6B4327" stroke-width="0.7" opacity="0.5"/><line x1="88" y1="44" x2="88" y2="58" stroke="#6B4327" stroke-width="0.7" opacity="0.5"/><line x1="108" y1="44" x2="108" y2="58" stroke="#6B4327" stroke-width="0.7" opacity="0.5"/><line x1="128" y1="44" x2="128" y2="58" stroke="#6B4327" stroke-width="0.7" opacity="0.5"/><line x1="148" y1="44" x2="148" y2="58" stroke="#6B4327" stroke-width="0.7" opacity="0.5"/><line x1="168" y1="44" x2="168" y2="58" stroke="#6B4327" stroke-width="0.7" opacity="0.5"/><line x1="188" y1="44" x2="188" y2="58" stroke="#6B4327" stroke-width="0.7" opacity="0.5"/><line x1="208" y1="44" x2="208" y2="58" stroke="#6B4327" stroke-width="0.7" opacity="0.5"/><rect x="28" y="104" width="190" height="14" rx="5" fill="#8B6347" stroke="#6B4327" stroke-width="1.5"/><line x1="48" y1="104" x2="48" y2="118" stroke="#6B4327" stroke-width="0.7" opacity="0.5"/><line x1="68" y1="104" x2="68" y2="118" stroke="#6B4327" stroke-width="0.7" opacity="0.5"/><line x1="88" y1="104" x2="88" y2="118" stroke="#6B4327" stroke-width="0.7" opacity="0.5"/><line x1="108" y1="104" x2="108" y2="118" stroke="#6B4327" stroke-width="0.7" opacity="0.5"/><line x1="128" y1="104" x2="128" y2="118" stroke="#6B4327" stroke-width="0.7" opacity="0.5"/><line x1="148" y1="104" x2="148" y2="118" stroke="#6B4327" stroke-width="0.7" opacity="0.5"/><line x1="168" y1="104" x2="168" y2="118" stroke="#6B4327" stroke-width="0.7" opacity="0.5"/><line x1="188" y1="104" x2="188" y2="118" stroke="#6B4327" stroke-width="0.7" opacity="0.5"/><line x1="208" y1="104" x2="208" y2="118" stroke="#6B4327" stroke-width="0.7" opacity="0.5"/><rect x="85" y="44" width="10" height="74" rx="4" fill="#4878af" opacity="0.85"/><rect x="138" y="44" width="10" height="74" rx="4" fill="#4878af" opacity="0.85"/><rect x="183" y="44" width="10" height="74" rx="4" fill="#4878af" opacity="0.85"/><text x="26" y="142" text-anchor="middle" fill="#9ca3af" font-size="8" font-family="sans-serif">Elbow</text><text x="213" y="142" text-anchor="middle" fill="#9ca3af" font-size="8" font-family="sans-serif">Wrist</text><text x="130" y="40" text-anchor="middle" fill="#8B6347" font-size="7.5" font-family="sans-serif">Rigid board (dorsal)</text><text x="130" y="135" text-anchor="middle" fill="#8B6347" font-size="7.5" font-family="sans-serif">Rigid board (volar)</text><text x="130" y="150" text-anchor="middle" fill="#9ca3af" font-size="7.5" font-family="sans-serif">Any rigid material: wood, cardboard, SAM</text><text x="130" y="158" text-anchor="middle" fill="#e3b341" font-size="7.5" font-family="sans-serif">Immobilize joint above and below Fx</text></svg>',
+    ankle: '<svg style="max-width:100%;height:auto" viewBox="0 0 260 160" xmlns="http://www.w3.org/2000/svg"><text x="130" y="13" text-anchor="middle" fill="#9ca3af" font-size="10" font-family="sans-serif">Pillow Splint — Ankle/Foot</text><path d="M95,20 Q83,20 80,40 L78,90 Q78,100 88,105 L150,105 Q162,100 162,90 L162,40 Q158,20 148,20 Z" fill="#c8956c" stroke="#a07050" stroke-width="1.5"/><path d="M78,90 Q72,92 60,100 Q50,108 50,118 Q50,128 62,128 L190,128 Q205,128 210,118 Q210,108 200,100 L162,90 Z" fill="#c8956c" stroke="#a07050" stroke-width="1.5"/><path d="M55,84 Q40,80 36,95 Q33,112 42,125 Q50,135 70,137 L180,137 Q200,135 210,125 Q218,112 215,95 Q212,80 200,84 L162,88 Q120,75 95,88 Z" fill="#5b9bd5" fill-opacity="0.25" stroke="#5b9bd5" stroke-width="1.5"/><line x1="80" y1="100" x2="180" y2="100" stroke="#5b9bd5" stroke-width="0.8" opacity="0.4" stroke-dasharray="4,3"/><line x1="70" y1="112" x2="190" y2="112" stroke="#5b9bd5" stroke-width="0.8" opacity="0.4" stroke-dasharray="4,3"/><line x1="65" y1="124" x2="195" y2="124" stroke="#5b9bd5" stroke-width="0.8" opacity="0.4" stroke-dasharray="4,3"/><rect x="84" y="54" width="10" height="54" rx="4" fill="#4878af" opacity="0.85"/><rect x="150" y="54" width="10" height="54" rx="4" fill="#4878af" opacity="0.85"/><text x="120" y="18" text-anchor="middle" fill="#9ca3af" font-size="8" font-family="sans-serif">Ankle</text><text x="120" y="145" text-anchor="middle" fill="#5b9bd5" font-size="7.5" font-family="sans-serif">Pillow / soft material</text><text x="120" y="153" text-anchor="middle" fill="#3fb950" font-size="7.5" font-family="sans-serif">Maintains position of comfort</text><text x="120" y="160" text-anchor="middle" fill="#e3b341" font-size="7.5" font-family="sans-serif">Check neurovascular status above &amp; below</text></svg>',
+    shoulder: '<svg style="max-width:100%;height:auto" viewBox="0 0 260 160" xmlns="http://www.w3.org/2000/svg"><text x="130" y="13" text-anchor="middle" fill="#9ca3af" font-size="10" font-family="sans-serif">Sling &amp; Swathe — Shoulder/Clavicle</text><path d="M85,18 Q70,18 65,28 L55,120 Q55,135 75,135 L175,135 Q195,135 195,120 L185,28 Q180,18 165,18 Z" fill="#c8956c" fill-opacity="0.3" stroke="#a07050" stroke-width="1.5"/><circle cx="125" cy="10" r="12" fill="#c8956c" stroke="#a07050" stroke-width="1.5"/><path d="M72,28 Q65,28 63,35 L60,75 Q60,85 68,87 L80,87 Q88,85 88,75 L88,35 Q88,28 80,28 Z" fill="#c8956c" stroke="#a07050" stroke-width="1.2"/><path d="M60,75 Q58,83 60,88 L118,94 Q128,96 130,88 Q130,80 120,78 L68,72 Z" fill="#c8956c" stroke="#a07050" stroke-width="1.2"/><path d="M60,85 Q55,88 52,98 Q50,108 62,114 L122,120 Q134,120 138,110 Q140,100 130,95 L68,88 Z" fill="#5b9bd5" fill-opacity="0.5" stroke="#5b9bd5" stroke-width="1.5"/><circle cx="125" cy="24" r="5" fill="#5b9bd5" stroke="#2d6fa5" stroke-width="1"/><text x="132" y="27" text-anchor="start" fill="#5b9bd5" font-size="7" font-family="sans-serif">Knot</text><rect x="52" y="65" width="142" height="14" rx="6" fill="#4878af" fill-opacity="0.7" stroke="#4878af" stroke-width="1.2"/><text x="130" y="74" text-anchor="middle" fill="#ffffff" font-size="7.5" font-family="sans-serif">Swathe</text><text x="40" y="118" text-anchor="start" fill="#5b9bd5" font-size="7.5" font-family="sans-serif">Sling</text><text x="130" y="148" text-anchor="middle" fill="#5b9bd5" font-size="7.5" font-family="sans-serif">Triangular bandage supports forearm</text><text x="130" y="156" text-anchor="middle" fill="#e3b341" font-size="7.5" font-family="sans-serif">Swathe immobilizes against chest</text></svg>',
+    finger: '<svg style="max-width:100%;height:auto" viewBox="0 0 260 160" xmlns="http://www.w3.org/2000/svg"><text x="130" y="13" text-anchor="middle" fill="#9ca3af" font-size="10" font-family="sans-serif">Buddy Taping — Injured Finger</text><rect x="58" y="22" width="30" height="36" rx="12" fill="#c8956c" stroke="#a07050" stroke-width="1.5"/><rect x="60" y="64" width="26" height="32" rx="5" fill="#c8956c" stroke="#a07050" stroke-width="1.5"/><rect x="60" y="102" width="26" height="36" rx="5" fill="#c8956c" stroke="#a07050" stroke-width="1.5"/><line x1="56" y1="62" x2="92" y2="62" stroke="#9ca3af" stroke-width="0.8" stroke-dasharray="2,2"/><line x1="56" y1="98" x2="92" y2="98" stroke="#9ca3af" stroke-width="0.8" stroke-dasharray="2,2"/><rect x="100" y="22" width="30" height="36" rx="12" fill="#c8956c" stroke="#a07050" stroke-width="1.5"/><rect x="102" y="64" width="26" height="32" rx="5" fill="#c8956c" stroke="#a07050" stroke-width="1.5"/><rect x="102" y="102" width="26" height="36" rx="5" fill="#c8956c" stroke="#a07050" stroke-width="1.5"/><rect x="58" y="70" width="74" height="10" rx="4" fill="#4878af" opacity="0.9"/><rect x="58" y="108" width="74" height="10" rx="4" fill="#4878af" opacity="0.9"/><rect x="88" y="22" width="12" height="128" rx="4" fill="#d4c9b5" opacity="0.8"/><text x="73" y="152" text-anchor="middle" fill="#f0883e" font-size="7.5" font-family="sans-serif">Injured</text><text x="115" y="152" text-anchor="middle" fill="#3fb950" font-size="7.5" font-family="sans-serif">Healthy</text><text x="73" y="18" text-anchor="middle" fill="#f0883e" font-size="7" font-family="sans-serif">Injured</text><text x="115" y="18" text-anchor="middle" fill="#3fb950" font-size="7" font-family="sans-serif">Healthy</text><text x="200" y="72" text-anchor="start" fill="#4878af" font-size="7" font-family="sans-serif">Tape 1</text><text x="200" y="112" text-anchor="start" fill="#4878af" font-size="7" font-family="sans-serif">Tape 2</text><line x1="200" y1="70" x2="140" y2="74" stroke="#4878af" stroke-width="0.8"/><line x1="200" y1="110" x2="140" y2="112" stroke="#4878af" stroke-width="0.8"/><text x="94" y="62" text-anchor="middle" fill="#9ca3af" font-size="6.5" font-family="sans-serif">DIP</text><text x="94" y="98" text-anchor="middle" fill="#9ca3af" font-size="6.5" font-family="sans-serif">PIP</text><text x="130" y="157" text-anchor="middle" fill="#e3b341" font-size="7" font-family="sans-serif">Padding between — tape proximal &amp; distal to joints</text></svg>',
+    elbow: '<svg style="max-width:100%;height:auto" viewBox="0 0 260 160" xmlns="http://www.w3.org/2000/svg"><text x="130" y="13" text-anchor="middle" fill="#9ca3af" font-size="10" font-family="sans-serif">Long Arm Posterior Splint (90° flexion)</text><path d="M35,18 Q22,18 20,30 L18,88 Q18,100 32,102 L60,102 Q72,100 72,88 L70,30 Q68,18 55,18 Z" fill="#c8956c" stroke="#a07050" stroke-width="1.5"/><line x1="45" y1="25" x2="45" y2="96" stroke="#d4c9b5" stroke-width="3" stroke-opacity="0.35" stroke-linecap="round"/><ellipse cx="44" cy="100" rx="28" ry="14" fill="#c8956c" stroke="#a07050" stroke-width="1.5"/><path d="M44,88 Q44,76 56,74 L185,68 Q202,67 204,80 Q205,93 190,96 L56,100 Q44,100 44,90 Z" fill="#c8956c" stroke="#a07050" stroke-width="1.5"/><line x1="58" y1="76" x2="198" y2="74" stroke="#d4c9b5" stroke-width="2" stroke-opacity="0.3" stroke-linecap="round"/><line x1="58" y1="92" x2="198" y2="93" stroke="#d4c9b5" stroke-width="2" stroke-opacity="0.3" stroke-linecap="round"/><rect x="14" y="15" width="12" height="88" rx="5" fill="#5b9bd5" stroke="#2d6fa5" stroke-width="1.2"/><rect x="14" y="98" width="194" height="12" rx="5" fill="#5b9bd5" stroke="#2d6fa5" stroke-width="1.2"/><rect x="14" y="17" width="12" height="86" rx="4" fill="#d4c9b5" fill-opacity="0.5"/><rect x="14" y="100" width="194" height="5" rx="3" fill="#d4c9b5" fill-opacity="0.5"/><rect x="14" y="35" width="60" height="8" rx="3" fill="#4878af" opacity="0.9"/><rect x="14" y="60" width="60" height="8" rx="3" fill="#4878af" opacity="0.9"/><rect x="80" y="98" width="8" height="16" rx="3" fill="#4878af" opacity="0.9"/><rect x="130" y="98" width="8" height="16" rx="3" fill="#4878af" opacity="0.9"/><rect x="175" y="98" width="8" height="16" rx="3" fill="#4878af" opacity="0.9"/><path d="M44,95 L52,95 L52,85" fill="none" stroke="#e3b341" stroke-width="1.5"/><text x="55" y="88" text-anchor="start" fill="#e3b341" font-size="8" font-family="sans-serif">90°</text><text x="8" y="58" text-anchor="middle" fill="#9ca3af" font-size="7" font-family="sans-serif">Upper</text><text x="8" y="66" text-anchor="middle" fill="#9ca3af" font-size="7" font-family="sans-serif">arm</text><text x="175" y="115" text-anchor="middle" fill="#9ca3af" font-size="7" font-family="sans-serif">Forearm</text><text x="12" y="138" text-anchor="start" fill="#5b9bd5" font-size="7.5" font-family="sans-serif">Posterior slab</text><text x="130" y="148" text-anchor="middle" fill="#9ca3af" font-size="7.5" font-family="sans-serif">Immobilize: finger tips to mid-upper arm</text><text x="130" y="157" text-anchor="middle" fill="#e3b341" font-size="7.5" font-family="sans-serif">Check radial pulse &amp; thumb sensation</text></svg>',
+    'c-collar': '<svg style="max-width:100%;height:auto" viewBox="0 0 260 160" xmlns="http://www.w3.org/2000/svg"><text x="130" y="13" text-anchor="middle" fill="#9ca3af" font-size="10" font-family="sans-serif">Cervical Collar — Neutral Alignment</text><path d="M100,12 Q80,10 72,30 Q68,50 78,62 L105,65 Q118,66 122,52 Q128,35 118,18 Z" fill="#c8956c" stroke="#a07050" stroke-width="1.5"/><path d="M78,58 Q72,62 70,72 Q68,82 78,86 L110,88 Q120,87 122,80 Q124,70 118,64 L105,62 Z" fill="#c8956c" stroke="#a07050" stroke-width="1.5"/><path d="M78,85 Q70,88 68,100 L68,125 Q68,132 80,132 L115,132 Q128,132 128,125 L128,100 Q128,88 118,85 Z" fill="#c8956c" stroke="#a07050" stroke-width="1.5"/><path d="M45,128 Q45,140 60,140 L155,140 Q170,140 170,128 L170,118 Q155,110 128,108 L68,108 Q45,110 45,118 Z" fill="#c8956c" fill-opacity="0.4" stroke="#a07050" stroke-width="1.2"/><rect x="88" y="90" width="16" height="10" rx="2" fill="#d4c9b5" stroke="#888" stroke-width="0.8" opacity="0.5"/><rect x="88" y="101" width="16" height="10" rx="2" fill="#d4c9b5" stroke="#888" stroke-width="0.8" opacity="0.5"/><rect x="88" y="112" width="16" height="10" rx="2" fill="#d4c9b5" stroke="#888" stroke-width="0.8" opacity="0.5"/><path d="M55,88 Q50,88 48,100 L46,122 Q46,134 60,136 L155,136 Q168,134 168,122 L166,100 Q164,88 158,88 L128,84 Q122,72 110,72 Q98,72 94,84 Z" fill="#5b9bd5" fill-opacity="0.8" stroke="#2d6fa5" stroke-width="1.8"/><path d="M86,72 Q80,68 76,76 Q72,84 78,88 L115,90 Q124,90 126,84 Q128,76 122,72 Z" fill="#5b9bd5" stroke="#2d6fa5" stroke-width="1.5"/><ellipse cx="100" cy="97" rx="8" ry="5" fill="#1a1a2e" stroke="#2d6fa5" stroke-width="1"/><text x="112" y="100" text-anchor="start" fill="#9ca3af" font-size="6.5" font-family="sans-serif">Trachea</text><text x="50" y="60" text-anchor="end" fill="#9ca3af" font-size="7" font-family="sans-serif">Head</text><text x="50" y="95" text-anchor="end" fill="#9ca3af" font-size="7" font-family="sans-serif">Chin</text><text x="50" y="110" text-anchor="end" fill="#5b9bd5" font-size="7" font-family="sans-serif">Collar</text><text x="50" y="120" text-anchor="end" fill="#5b9bd5" font-size="7" font-family="sans-serif">(rigid)</text><text x="118" y="152" text-anchor="middle" fill="#e3b341" font-size="7.5" font-family="sans-serif">Maintain neutral — no flexion/extension</text><text x="118" y="160" text-anchor="middle" fill="#3fb950" font-size="7.5" font-family="sans-serif">Size correctly — chin seated, stable</text></svg>',
+    board: '<svg style="max-width:100%;height:auto" viewBox="0 0 260 160" xmlns="http://www.w3.org/2000/svg"><text x="130" y="13" text-anchor="middle" fill="#9ca3af" font-size="10" font-family="sans-serif">Padded Rigid Board Splint</text><rect x="25" y="42" width="210" height="18" rx="7" fill="#8B6347" stroke="#6B4327" stroke-width="1.5"/><line x1="45" y1="42" x2="45" y2="60" stroke="#6B4327" stroke-width="0.8" opacity="0.45"/><line x1="63" y1="42" x2="63" y2="60" stroke="#6B4327" stroke-width="0.8" opacity="0.45"/><line x1="81" y1="42" x2="81" y2="60" stroke="#6B4327" stroke-width="0.8" opacity="0.45"/><line x1="99" y1="42" x2="99" y2="60" stroke="#6B4327" stroke-width="0.8" opacity="0.45"/><line x1="117" y1="42" x2="117" y2="60" stroke="#6B4327" stroke-width="0.8" opacity="0.45"/><line x1="135" y1="42" x2="135" y2="60" stroke="#6B4327" stroke-width="0.8" opacity="0.45"/><line x1="153" y1="42" x2="153" y2="60" stroke="#6B4327" stroke-width="0.8" opacity="0.45"/><line x1="171" y1="42" x2="171" y2="60" stroke="#6B4327" stroke-width="0.8" opacity="0.45"/><line x1="189" y1="42" x2="189" y2="60" stroke="#6B4327" stroke-width="0.8" opacity="0.45"/><line x1="207" y1="42" x2="207" y2="60" stroke="#6B4327" stroke-width="0.8" opacity="0.45"/><line x1="225" y1="42" x2="225" y2="60" stroke="#6B4327" stroke-width="0.8" opacity="0.45"/><rect x="27" y="55" width="206" height="12" rx="4" fill="#d4c9b5" stroke="#b0a89a" stroke-width="0.8"/><path d="M45,65 Q32,65 30,82 Q32,98 45,98 L200,98 Q218,98 220,82 Q218,65 200,65 Z" fill="#c8956c" stroke="#a07050" stroke-width="1.5"/><ellipse cx="37" cy="81" rx="16" ry="22" fill="#c8956c" stroke="#a07050" stroke-width="1.2"/><ellipse cx="88" cy="80" rx="6" ry="24" fill="#4878af" fill-opacity="0" stroke="#4878af" stroke-width="7" stroke-opacity="0.75"/><ellipse cx="140" cy="80" rx="6" ry="24" fill="#4878af" fill-opacity="0" stroke="#4878af" stroke-width="7" stroke-opacity="0.75"/><ellipse cx="185" cy="80" rx="6" ry="24" fill="#4878af" fill-opacity="0" stroke="#4878af" stroke-width="7" stroke-opacity="0.75"/><text x="37" y="143" text-anchor="middle" fill="#9ca3af" font-size="8" font-family="sans-serif">Elbow</text><text x="208" y="143" text-anchor="middle" fill="#9ca3af" font-size="8" font-family="sans-serif">Wrist</text><text x="128" y="38" text-anchor="middle" fill="#8B6347" font-size="7.5" font-family="sans-serif">Rigid board</text><text x="128" y="65" text-anchor="middle" fill="#d4c9b5" font-size="7.5" font-family="sans-serif">Padding</text><text x="220" y="82" text-anchor="start" fill="#4878af" font-size="7" font-family="sans-serif">Wrap</text><text x="130" y="148" text-anchor="middle" fill="#9ca3af" font-size="7.5" font-family="sans-serif">Board on posterior (dorsal) surface</text><text x="130" y="157" text-anchor="middle" fill="#e3b341" font-size="7.5" font-family="sans-serif">Immobilize one joint above and below</text></svg>',
+    pelvis: '<svg style="max-width:100%;height:auto" viewBox="0 0 260 160" xmlns="http://www.w3.org/2000/svg"><text x="130" y="13" text-anchor="middle" fill="#9ca3af" font-size="10" font-family="sans-serif">Pelvic Binder — Anterior View</text><path d="M20,55 Q15,38 35,28 Q55,20 75,32 Q90,42 88,62 L78,90 Q75,95 68,92 L40,78 Q18,70 20,55 Z" fill="#c8956c" stroke="#a07050" stroke-width="1.5"/><path d="M240,55 Q245,38 225,28 Q205,20 185,32 Q170,42 172,62 L182,90 Q185,95 192,92 L220,78 Q242,70 240,55 Z" fill="#c8956c" stroke="#a07050" stroke-width="1.5"/><path d="M88,88 Q88,108 100,115 Q120,122 130,122 Q140,122 160,115 Q172,108 172,88 L160,80 Q140,72 130,72 Q120,72 100,80 Z" fill="#c8956c" stroke="#a07050" stroke-width="1.5"/><path d="M85,60 Q82,70 85,85 L88,88 Q98,95 130,95 Q162,95 172,88 L175,85 Q178,70 175,60 Q162,48 130,46 Q98,48 85,60 Z" fill="#c8956c" fill-opacity="0.7" stroke="#a07050" stroke-width="1.2"/><circle cx="78" cy="105" r="14" fill="#c8956c" stroke="#a07050" stroke-width="1.5"/><circle cx="182" cy="105" r="14" fill="#c8956c" stroke="#a07050" stroke-width="1.5"/><text x="78" y="108" text-anchor="middle" fill="#9ca3af" font-size="7" font-family="sans-serif">GT</text><text x="182" y="108" text-anchor="middle" fill="#9ca3af" font-size="7" font-family="sans-serif">GT</text><circle cx="85" cy="82" r="10" fill="#d4c9b5" fill-opacity="0.3" stroke="#a07050" stroke-width="0.8" stroke-dasharray="2,2"/><circle cx="175" cy="82" r="10" fill="#d4c9b5" fill-opacity="0.3" stroke="#a07050" stroke-width="0.8" stroke-dasharray="2,2"/><rect x="32" y="100" width="196" height="16" rx="7" fill="#5b9bd5" fill-opacity="0.85" stroke="#2d6fa5" stroke-width="1.5"/><rect x="112" y="97" width="36" height="22" rx="5" fill="#e3b341" stroke="#b08000" stroke-width="1.5"/><text x="130" y="112" text-anchor="middle" fill="#1a1a1a" font-size="6.5" font-family="sans-serif">TENSIONER</text><text x="22" y="75" text-anchor="end" fill="#9ca3af" font-size="7" font-family="sans-serif">Iliac</text><text x="22" y="83" text-anchor="end" fill="#9ca3af" font-size="7" font-family="sans-serif">crest</text><text x="240" y="75" text-anchor="start" fill="#9ca3af" font-size="7" font-family="sans-serif">Iliac</text><text x="240" y="83" text-anchor="start" fill="#9ca3af" font-size="7" font-family="sans-serif">crest</text><text x="130" y="130" text-anchor="middle" fill="#5b9bd5" font-size="7.5" font-family="sans-serif">Binder at level of Greater Trochanters</text><text x="130" y="138" text-anchor="middle" fill="#e3b341" font-size="7.5" font-family="sans-serif">NOT at iliac crests — compresses ring</text><text x="130" y="146" text-anchor="middle" fill="#3fb950" font-size="7.5" font-family="sans-serif">Sheet wrap = field expedient</text></svg>',
+    mallet: '<svg style="max-width:100%;height:auto" viewBox="0 0 260 160" xmlns="http://www.w3.org/2000/svg"><text x="130" y="13" text-anchor="middle" fill="#9ca3af" font-size="10" font-family="sans-serif">Mallet Finger — Stack Splint (DIP in extension)</text><rect x="30" y="62" width="70" height="36" rx="10" fill="#c8956c" stroke="#a07050" stroke-width="1.5"/><circle cx="105" cy="80" r="12" fill="#c8956c" stroke="#3fb950" stroke-width="1.8"/><text x="105" y="78" text-anchor="middle" fill="#3fb950" font-size="7.5" font-family="sans-serif">PIP</text><text x="105" y="86" text-anchor="middle" fill="#3fb950" font-size="6.5" font-family="sans-serif">free</text><rect x="118" y="62" width="75" height="36" rx="10" fill="#c8956c" stroke="#a07050" stroke-width="1.5"/><circle cx="117" cy="80" r="6" fill="#c8956c" stroke="#e3b341" stroke-width="1.5"/><text x="117" y="55" text-anchor="middle" fill="#e3b341" font-size="7.5" font-family="sans-serif">DIP</text><text x="117" y="48" text-anchor="middle" fill="#e3b341" font-size="7.5" font-family="sans-serif">EXTENDED</text><rect x="185" y="62" width="20" height="15" rx="5" fill="#e8e0d4" stroke="#c8b8a4" stroke-width="1"/><rect x="116" y="55" width="82" height="14" rx="6" fill="#5b9bd5" stroke="#2d6fa5" stroke-width="1.5"/><text x="157" y="52" text-anchor="middle" fill="#5b9bd5" font-size="7.5" font-family="sans-serif">Stack splint</text><path d="M30,62 Q105,58 157,55" stroke="#f0883e" stroke-width="2" fill="none" stroke-dasharray="3,2"/><text x="90" y="58" text-anchor="middle" fill="#f0883e" font-size="6.5" font-family="sans-serif">Extensor tendon</text><path d="M30,98 Q105,102 195,98" stroke="#d4c9b5" stroke-width="2" fill="none" stroke-dasharray="3,2" opacity="0.6"/><text x="130" y="125" text-anchor="middle" fill="#9ca3af" font-size="7.5" font-family="sans-serif">DIP held in full extension 6–8 weeks</text><text x="130" y="133" text-anchor="middle" fill="#3fb950" font-size="7.5" font-family="sans-serif">PIP joint remains FREE to move</text><text x="130" y="141" text-anchor="middle" fill="#f0883e" font-size="7.5" font-family="sans-serif">Extensor tendon avulsion / rupture</text><text x="130" y="149" text-anchor="middle" fill="#e3b341" font-size="7.5" font-family="sans-serif">NEVER allow DIP to flex during treatment</text></svg>',
+    'sugar-tong': '<svg style="max-width:100%;height:auto" viewBox="0 0 260 160" xmlns="http://www.w3.org/2000/svg"><text x="130" y="13" text-anchor="middle" fill="#9ca3af" font-size="10" font-family="sans-serif">Sugar Tong Splint — Humerus</text><path d="M45,18 Q32,18 30,30 L28,88 Q28,98 42,100 L68,100 Q82,98 82,88 L80,30 Q78,18 65,18 Z" fill="#c8956c" stroke="#a07050" stroke-width="1.5"/><ellipse cx="55" cy="100" rx="30" ry="18" fill="#c8956c" stroke="#a07050" stroke-width="1.5"/><path d="M55,90 Q55,78 67,76 L195,72 Q210,71 212,84 Q213,96 198,98 L67,100 Q55,100 55,90 Z" fill="#c8956c" stroke="#a07050" stroke-width="1.5"/><line x1="55" y1="30" x2="55" y2="96" stroke="#d4c9b5" stroke-width="2.5" stroke-opacity="0.35" stroke-linecap="round"/><line x1="70" y1="78" x2="204" y2="76" stroke="#d4c9b5" stroke-width="2" stroke-opacity="0.3" stroke-linecap="round"/><rect x="14" y="15" width="12" height="86" rx="5" fill="#5b9bd5" stroke="#2d6fa5" stroke-width="1.5"/><path d="M14,100 Q14,128 40,130 Q55,132 70,130 Q84,128 84,100" fill="none" stroke="#5b9bd5" stroke-width="12" stroke-linecap="round"/><rect x="60" y="104" width="156" height="12" rx="5" fill="#5b9bd5" stroke="#2d6fa5" stroke-width="1.5"/><rect x="14" y="17" width="12" height="84" rx="4" fill="#d4c9b5" fill-opacity="0.5"/><rect x="60" y="106" width="156" height="5" rx="3" fill="#d4c9b5" fill-opacity="0.5"/><rect x="14" y="35" width="70" height="7" rx="3" fill="#4878af" opacity="0.85"/><rect x="14" y="62" width="70" height="7" rx="3" fill="#4878af" opacity="0.85"/><rect x="100" y="104" width="8" height="16" rx="3" fill="#4878af" opacity="0.85"/><rect x="155" y="104" width="8" height="16" rx="3" fill="#4878af" opacity="0.85"/><text x="8" y="80" text-anchor="middle" fill="#5b9bd5" font-size="16" font-family="sans-serif" transform="rotate(-90,8,80)">U-shape</text><text x="10" y="58" text-anchor="middle" fill="#9ca3af" font-size="6.5" font-family="sans-serif">Upper</text><text x="10" y="66" text-anchor="middle" fill="#9ca3af" font-size="6.5" font-family="sans-serif">arm</text><text x="155" y="118" text-anchor="middle" fill="#9ca3af" font-size="7" font-family="sans-serif">Forearm</text><text x="14" y="125" text-anchor="start" fill="#5b9bd5" font-size="7" font-family="sans-serif">Around</text><text x="14" y="133" text-anchor="start" fill="#5b9bd5" font-size="7" font-family="sans-serif">elbow</text><text x="148" y="148" text-anchor="middle" fill="#5b9bd5" font-size="7.5" font-family="sans-serif">Splint wraps around posterior elbow</text><text x="148" y="157" text-anchor="middle" fill="#e3b341" font-size="7.5" font-family="sans-serif">Controls rotation at wrist &amp; shoulder</text></svg>'
+  };
+  return diagrams[type] || diagrams['forearm'];
+}
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+
+const state = {
+  mode: 'browse',
+  filterRegion: 'all',
+  filterInjury: 'all',
+  filterSetting: 'all',
+  selectedId: null,
+  quizIndex: 0,
+  quizAnswered: false,
+  quizScore: 0,
+  quizOrder: [],
+  theme: 'dark'
+};
+
+// ─── HELPERS ──────────────────────────────────────────────────────────────────
+
+function getFiltered() {
+  return SPLINTS.filter(s => {
+    if (state.filterRegion  !== 'all' && !s.regions.includes(state.filterRegion))  return false;
+    if (state.filterInjury  !== 'all' && !s.injuries.includes(state.filterInjury)) return false;
+    if (state.filterSetting !== 'all' && !s.setting.includes(state.filterSetting)) return false;
+    return true;
+  });
+}
+
+// ─── SIDEBAR ─────────────────────────────────────────────────────────────────
+
+function renderSidebar() {
+  const filtered = getFiltered();
+  document.getElementById('splint-count').textContent = `(${filtered.length} of ${SPLINTS.length})`;
+  const list = document.getElementById('splint-list');
+  list.innerHTML = '';
+  filtered.forEach(s => {
+    const el = document.createElement('div');
+    el.className = 'splint-item' + (state.selectedId === s.id ? ' active' : '');
+    el.innerHTML = `<div class="dot" style="background:${s.color}"></div>
+      <div><div class="name">${s.name}</div><div class="tag">${s.category}</div></div>`;
+    el.onclick = () => { state.selectedId = s.id; updateAll(); };
+    list.appendChild(el);
+  });
+}
+
+// ─── CONTENT ──────────────────────────────────────────────────────────────────
+
+function renderContent() {
+  const area = document.getElementById('content-area');
+  if (state.mode === 'quiz') { renderQuiz(); return; }
+  if (!state.selectedId) {
+    area.innerHTML = `<div class="empty-state"><div class="big">🩹</div><p>Select a splint from the sidebar to explore it.</p></div>`;
+    return;
+  }
+  const s = SPLINTS.find(x => x.id === state.selectedId);
+  if (!s) return;
+
+  const regionLabels  = { upper:'Upper Extremity', lower:'Lower Extremity', spine:'Spine/Pelvis' };
+  const injuryLabels  = { fracture:'Fracture', dislocation:'Dislocation', softtissue:'Soft Tissue', traction:'Traction' };
+  const settingLabels = { commercial:'Commercial', improvised:'Improvised', hospital:'Hospital/ED' };
+
+  area.innerHTML = `<div class="splint-card">
+    <div class="card-header">
+      <div class="card-icon" style="background:${s.color}22;border:1px solid ${s.color}44">${s.emoji}</div>
+      <div>
+        <div class="card-title">${s.name}</div>
+        <div class="card-subtitle">${s.description}</div>
+        <div class="badge-row">
+          <span class="badge badge-category">${s.category}</span>
+          ${s.regions.map(r =>`<span class="badge badge-region">${regionLabels[r]||r}</span>`).join('')}
+          ${s.injuries.map(i =>`<span class="badge badge-injury">${injuryLabels[i]||i}</span>`).join('')}
+          ${s.setting.map(t  =>`<span class="badge badge-setting">${settingLabels[t]||t}</span>`).join('')}
+        </div>
+      </div>
+    </div>
+    <div class="sections-grid">
+      <div class="section">
+        <h3><span class="icon">✅</span> Indications (When to Use)</h3>
+        <ul class="indicator-list">${s.indications.map(i=>`<li>${i}</li>`).join('')}</ul>
+      </div>
+      <div class="section">
+        <h3><span class="icon">🚫</span> Contraindications</h3>
+        <ul class="indicator-list contra">${s.contraindications.map(i=>`<li>${i}</li>`).join('')}</ul>
+      </div>
+      <div class="section">
+        <h3><span class="icon">⚠️</span> Warnings &amp; Monitoring</h3>
+        <ul class="indicator-list warn">${s.warnings.map(i=>`<li>${i}</li>`).join('')}</ul>
+      </div>
+      <div class="section">
+        <h3><span class="icon">🖼</span> Diagram</h3>
+        <div class="diagram-wrap">${getDiagram(s.diagramType)}</div>
+      </div>
+      <div class="section full">
+        <h3><span class="icon">📋</span> Application Steps</h3>
+        <ol class="steps-list">${s.steps.map((step,i)=>`<li><span class="step-num">${i+1}</span>${step}</li>`).join('')}</ol>
+      </div>
+      <div class="section full">
+        <h3><span class="icon">★</span> Clinical Pearls</h3>
+        <ul class="pearl-list">${s.pearls.map(p=>`<li>${p}</li>`).join('')}</ul>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ─── QUIZ ─────────────────────────────────────────────────────────────────────
+
+function renderQuiz() {
+  const area = document.getElementById('content-area');
+  if (state.quizOrder.length === 0) {
+    state.quizOrder = [...Array(QUESTIONS.length).keys()]
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 10);
+    state.quizIndex = 0; state.quizScore = 0;
+  }
+  if (state.quizIndex >= state.quizOrder.length) {
+    area.innerHTML = `<div class="quiz-area"><div class="quiz-card">
+      <div class="quiz-progress">Quiz complete!</div>
+      <div style="font-size:18px;font-weight:700;color:var(--textbright);margin-bottom:12px">Final Score</div>
+      <div class="quiz-score" style="font-size:28px">${state.quizScore} / 10</div>
+      <div style="font-size:13px;color:var(--text2);margin-top:8px">${
+        state.quizScore>=9?'Excellent work — you\'re ready for the field!':
+        state.quizScore>=7?'Good job. Review the missed questions.':
+        'Keep studying — these scenarios are critical for field care.'
+      }</div>
+      <div class="quiz-btn-row" style="margin-top:20px">
+        <button class="quiz-btn" onclick="restartQuiz()">New Quiz</button>
+        <button class="quiz-btn ghost" onclick="setMode('browse')">Back to Browse</button>
+      </div>
+    </div></div>`;
+    updatePrompt(); return;
+  }
+  const qi = state.quizOrder[state.quizIndex];
+  const q  = QUESTIONS[qi];
+  area.innerHTML = `<div class="quiz-area"><div class="quiz-card">
+    <div class="quiz-progress">Question ${state.quizIndex+1} of 10 &nbsp;|&nbsp; <span class="quiz-score">Score: ${state.quizScore}</span> &nbsp;|&nbsp; Pool: ${QUESTIONS.length} questions</div>
+    <div class="quiz-scenario">${q.scenario}</div>
+    <div class="quiz-options" id="quiz-opts">
+      ${q.options.map((opt,i)=>`<button class="quiz-opt" data-idx="${i}" onclick="answerQuiz(${i})">${opt}</button>`).join('')}
+    </div>
+    <div class="quiz-explanation" id="quiz-exp">${q.explanation}</div>
+    <div class="quiz-btn-row" id="quiz-nav" style="display:none">
+      <button class="quiz-btn" onclick="nextQuestion()">Next Question →</button>
+    </div>
+  </div></div>`;
+  updatePrompt();
+}
+
+function answerQuiz(idx) {
+  if (state.quizAnswered) return;
+  state.quizAnswered = true;
+  const qi = state.quizOrder[state.quizIndex];
+  const q  = QUESTIONS[qi];
+  document.querySelectorAll('.quiz-opt').forEach((btn, i) => {
+    if (i === q.correct) btn.classList.add('correct');
+    else if (i === idx && idx !== q.correct) btn.classList.add('wrong');
+    else btn.classList.add('reveal');
+  });
+  if (idx === q.correct) state.quizScore++;
+  document.getElementById('quiz-exp').classList.add('show');
+  document.getElementById('quiz-nav').style.display = 'flex';
+  updatePrompt();
+}
+
+function nextQuestion() {
+  state.quizIndex++;
+  state.quizAnswered = false;
+  renderContent();
+}
+
+function restartQuiz() {
+  state.quizOrder    = [];
+  state.quizIndex    = 0;
+  state.quizScore    = 0;
+  state.quizAnswered = false;
+  renderContent();
+}
+
+// ─── PROMPT ───────────────────────────────────────────────────────────────────
+
+function updatePrompt() {
+  const out = document.getElementById('prompt-output');
+  if (state.mode === 'quiz') {
+    if (state.quizIndex >= 10 && state.quizOrder.length > 0) {
+      out.textContent = `I just completed an EMT splint quiz and scored ${state.quizScore}/10 from a pool of ${QUESTIONS.length} questions. Can you quiz me further with new scenario-based questions? Focus on traction splints, pelvic binders, C-collar sizing, mallet finger, and CSM assessment.`;
+    } else if (state.quizAnswered && state.quizOrder.length > 0) {
+      const q = QUESTIONS[state.quizOrder[state.quizIndex]];
+      out.textContent = `I'm studying EMT splinting. I just answered this scenario: "${q.scenario.replace(/<[^>]+>/g,'')}" — explain the reasoning in more depth, including what complications could arise from choosing the wrong splint in this situation.`;
+    } else {
+      out.textContent = `I'm studying EMT splinting scenarios. Generate 3 more clinical scenario questions testing splint selection, contraindication identification, and application technique. Include one about pelvic fractures and one about cervical spine immobilization. Format each with a scenario, four options, the correct answer, and a detailed explanation.`;
+    }
+    return;
+  }
+  if (!state.selectedId) {
+    out.textContent = `Select a splint in Browse mode, or answer a question in Quiz mode to generate a study prompt.`;
+    return;
+  }
+  const s = SPLINTS.find(x => x.id === state.selectedId);
+  const regionMap = { upper:'upper extremity', lower:'lower extremity', spine:'spine and pelvis' };
+  const regions   = s.regions.map(r => regionMap[r]||r).join(' and ');
+  const injuries  = s.injuries.join(', ');
+  out.textContent = `I'm an EMT student studying the ${s.name} (${s.category} splint), used for ${injuries} injuries of the ${regions}. Key contraindications include: ${s.contraindications.slice(0,2).join('; ')}. Please give me:
+1. A deeper explanation of why this splint is chosen over alternatives for its primary indication
+2. A realistic field scenario with full patient presentation where this splint would be used
+3. The most common application errors EMT students make with this splint
+4. How CSM assessment findings would change your management before and after applying it`;
+}
+
+// ─── CONTROLS ────────────────────────────────────────────────────────────────
+
+function toggleChip(el) {
+  const group = el.dataset.group;
+  document.querySelectorAll(`.chip[data-group="${group}"]`).forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  if (group === 'region')  state.filterRegion  = el.dataset.val;
+  if (group === 'injury')  state.filterInjury  = el.dataset.val;
+  if (group === 'setting') state.filterSetting = el.dataset.val;
+  if (state.selectedId && !getFiltered().find(s => s.id === state.selectedId)) {
+    state.selectedId = null;
+  }
+  updateAll();
+}
+
+function setMode(m) {
+  state.mode = m;
+  document.getElementById('tab-browse').classList.toggle('active', m === 'browse');
+  document.getElementById('tab-quiz').classList.toggle('active',   m === 'quiz');
+  if (m === 'quiz' && state.quizOrder.length === 0) state.quizAnswered = false;
+  updateAll();
+}
+
+function applyPreset(name) {
+  const presets = {
+    upper:   { region:'upper', injury:'all',      setting:'all',        select:'sam' },
+    lower:   { region:'lower', injury:'all',      setting:'all',        select:'pillow' },
+    traction:{ region:'lower', injury:'traction', setting:'commercial', select:'traction-hare' },
+    spine:   { region:'spine', injury:'all',      setting:'all',        select:'c-collar' },
+    field:   { region:'all',   injury:'fracture', setting:'improvised', select:'improvised' },
+    all:     { region:'all',   injury:'all',      setting:'all',        select:null }
+  };
+  const p = presets[name];
+  if (!p) return;
+  state.filterRegion  = p.region;
+  state.filterInjury  = p.injury;
+  state.filterSetting = p.setting;
+  if (p.select) state.selectedId = p.select;
+  state.mode = 'browse';
+  document.getElementById('tab-browse').classList.add('active');
+  document.getElementById('tab-quiz').classList.remove('active');
+  ['region','injury','setting'].forEach(g => {
+    const val = state['filter' + g.charAt(0).toUpperCase() + g.slice(1)];
+    document.querySelectorAll(`.chip[data-group="${g}"]`).forEach(c => {
+      c.classList.toggle('active', c.dataset.val === val);
+    });
+  });
+  updateAll();
+}
+
+function toggleTheme() {
+  state.theme = state.theme === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', state.theme);
+  document.getElementById('theme-btn').textContent = state.theme === 'dark' ? '🌙' : '☀️';
+}
+
+function copyPrompt() {
+  const text = document.getElementById('prompt-output').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1500);
+  });
+}
+
+function updateAll() {
+  renderSidebar();
+  renderContent();
+  updatePrompt();
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+
+state.selectedId = 'sam';
+updateAll();
+</script>
+</body>
+</html>
+    'c-collar': `<svg style="${svgStyle}" viewBox="0 0 260 130" xmlns="http://www.w
